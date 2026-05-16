@@ -59,7 +59,7 @@ CREATE TABLE Setting(
  notification_switch BOOLEAN,
  type VARCHAR NOT NULL,
  PRIMARY KEY (type,student_id),
- FOREIGN KEY (student_id) REFERENCES Teacher(teacher_id)
+ FOREIGN KEY (student_id) REFERENCES Student(student_id)
  ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE TABLE Enrolls(
@@ -70,7 +70,7 @@ CREATE TABLE Enrolls(
  PRIMARY KEY (course_id,student_id),
  FOREIGN KEY (course_id) REFERENCES Course(course_id)
  ON DELETE CASCADE ON UPDATE CASCADE,
- FOREIGN KEY (student_id) REFERENCES Teacher(teacher_id)
+ FOREIGN KEY (student_id) REFERENCES Student(student_id)
  ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE TABLE Textbook(
