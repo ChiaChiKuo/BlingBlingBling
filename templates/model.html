@@ -1401,10 +1401,8 @@
   });
 
   function doLogout() {
-    document.getElementById('app-page').style.display = 'none';
-    document.getElementById('login-page').style.display = 'flex';
-    document.getElementById('login-pass').value = '';
-  }
+    window.location.href = '/logout';
+}
 
   const pages = ['home', 'courses', 'announcements', 'settings'];
 

@@ -152,8 +152,13 @@ def teacher_dashboard():
 # 登出
 @app.route("/logout")
 def logout():
+    print("=" * 40)
+    print("登出前 session:", dict(session))
     session.clear()
-    return redirect(url_for('login_page'))
+    print("登出後 session:", dict(session))
+    print("跳轉到 home()")
+    print("=" * 40)
+    return redirect(url_for('home'))
 
 # API: 獲取課程學生列表（教師用）
 @app.route("/api/course/<course_id>/students")
