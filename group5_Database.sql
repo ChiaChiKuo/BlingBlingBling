@@ -29,15 +29,6 @@ CREATE TABLE Teaches(
  FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
  ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE TABLE Teaches(
- course_id CHAR(10) NOT NULL,
- teacher_id CHAR(10) NOT NULL,
- PRIMARY KEY (course_id, teacher_id),
- FOREIGN KEY (course_id) REFERENCES Course(course_id)
- ON DELETE CASCADE ON UPDATE CASCADE,
- FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
- ON DELETE CASCADE ON UPDATE CASCADE
-);
 CREATE TABLE Notification(
  teacher_id CHAR(10),
  notification_id CHAR NOT NULL,
