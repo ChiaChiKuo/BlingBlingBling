@@ -20,72 +20,7 @@ def home():
             return redirect(url_for('teacher_dashboard'))
     return render_template('login.html')
 
-# 登入頁面
-@app.route("/login", methods=["GET", "POST"])
-def login_page():
-    error = None
-    if request.method == "POST":
-        role = request.form.get("role")
-        user_id = request.form.get("user_id")
-        password = request.form.get("password")
-        
-        # 除錯：印出收到的資料
-        print("=" * 40)
-        print("登入嘗試")
-        print(f"role: [{role}]")
-        print(f"user_id: [{user_id}]")
-        print(f"password: [{password}]")
-        print("=" * 40)
-        
-        print("=" * 40)
-        print("登入嘗試")
-        print(f"role: [{role}]")
-        print(f"user_id: [{user_id}]")
-        print(f"password: [{password}]")
-        print("=" * 40)
-        
-        conn = get_db()
-        cursor = conn.cursor()
-        
-        # 先查詢教師表看看有什麼資料
-        cursor.execute("SELECT * FROM Teacher")
-        all_teachers = cursor.fetchall()
-        print(f"資料庫中的教師資料: {[dict(t) for t in all_teachers]}")
-        
-        if role == "teacher":
-            cursor.execute(
-                "SELECT * FROM Teacher WHERE teacher_id = ? AND password = ?",
-                (user_id, password)
-            )
-            user = cursor.fetchone()
-            if user:
-                session.clear()
-                session["user_id"] = user["teacher_id"]
-                session["user_name"] = user["teacher_name"]
-                session["user_email"] = user["email"]
-                session["role"] = "teacher"
-                conn.close()
-                return redirect(url_for('teacher_dashboard'))
-        
-        elif role == "student":
-            cursor.execute(
-                "SELECT * FROM Student WHERE student_id = ? AND password = ?",
-                (user_id, password)
-            )
-            user = cursor.fetchone()
-            if user:
-                session.clear()
-                session["user_id"] = user["student_id"]
-                session["user_name"] = user["student_name"]
-                session["user_email"] = user["email"]
-                session["role"] = "student"
-                conn.close()
-                return redirect(url_for('student_dashboard'))
-        
-        conn.close()
-        error = "帳號或密碼錯誤"
-    
-    return render_template('login.html', error=error)
+    return render_template('index.html')
 
 # 學生儀表板
 @app.route("/student")
