@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>國立中山大學 學習平台</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/students.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 </head>
-<body onload="initializeApp()">
+<body>
 
 <!-- ════════════════════════════════════
      LOGIN PAGE
@@ -37,25 +38,25 @@
 
     <!-- right card -->
     <div class="login-card">
-      <h2>帳號密碼登入</h2>
+      <h2>Login</h2>
 
       <div class="login-field">
         <span class="field-icon">👤</span>
-        <input type="text" id="login-user" placeholder="學號 / 帳號" value="B134020005">
+        <input type="text" id="login-user" placeholder="Student ID / Accoun" >
       </div>
 
       <div class="login-field">
         <span class="field-icon">🔒</span>
-        <input type="password" id="login-pass" placeholder="密碼" value="password123">
+        <input type="password" id="login-pass" placeholder="Password">
       </div>
 
-      <div class="login-error" id="login-error">帳號或密碼錯誤，請重新輸入。</div>
+      <div class="login-error" id="login-error">Incorrect account or password.</div>
 
-      <button class="btn-login" onclick="doLogin()">登入</button>
+      <button class="btn-login" onclick="doLogin()">Sign In</button>
 
       <div class="login-hint">
-        學校師生請使用 SSO 帳號登入<br>
-        校外人士請使用註冊的 Email 登入
+        Faculty and students should use SSO login<br>
+        External users should sign in with registered email
       </div>
     </div>
   </div>
@@ -79,7 +80,7 @@
     </div>
     <div class="nav-logo-img">🎓</div>
     <span class="nav-school">國立中山大學</span>
-    <span class="nav-link" onclick="goPage('home')">發現課程</span>
+    <span class="nav-link" onclick="goPage('home')">Explore Courses</span>
 
     <div class="nav-spacer"></div>
 
@@ -92,8 +93,8 @@
       <div class="nav-icon-btn" title="說明">❓</div>
 
       <div class="nav-avatar" onclick="goPage('settings')">
-        <div class="avatar-circle">{{ user_name[0] if user_name else '用' }}</div>
-        <span class="avatar-name">{{ user_name or '使用者' }} ▾</span>
+        <div class="avatar-circle">郭</div>
+        <span class="avatar-name">郭家綺 ▾</span>
       </div>
     </div>
   </nav>
@@ -104,44 +105,44 @@
     <aside class="sidebar">
       <div class="sidebar-profile">
         <div class="profile-avatar">👤</div>
-        <div class="profile-name">{{ user_name or '使用者' }}</div>
-        <div class="profile-role">學生</div>
+        <div class="profile-name">郭家綺</div>
+        <div class="profile-role">Student</div>
       </div>
 
-      <div class="sidebar-section-title">我的學習</div>
+      <div class="sidebar-section-title">My Learning</div>
 
       <div class="sidebar-item active" id="nav-home" onclick="goPage('home')">
-        <span class="si-icon">🏠</span> 首頁
+        <span class="si-icon">🏠</span> Home
       </div>
       <div class="sidebar-item" id="nav-courses" onclick="goPage('courses')">
-        <span class="si-icon">📖</span> 我的課程
+        <span class="si-icon">📖</span> My Courses
       </div>
       <div class="sidebar-item" id="nav-announcements" onclick="goPage('announcements')">
-        <span class="si-icon">📢</span> 公告
+        <span class="si-icon">📢</span> Announcements
       </div>
 
-      <div class="sidebar-section-title">我的資源</div>
+      <div class="sidebar-section-title">Resources</div>
 
       <div class="sidebar-item" onclick="showToast('檔案功能開啟中...')">
-        <span class="si-icon">📄</span> 檔案
+        <span class="si-icon">📄</span> Files
       </div>
       <div class="sidebar-item" onclick="showToast('互動教材開啟中...')">
-        <span class="si-icon">🎮</span> 互動教材
+        <span class="si-icon">🎮</span> Interactive Materials
       </div>
       <div class="sidebar-item" onclick="showToast('個人題庫開啟中...')">
-        <span class="si-icon">📝</span> 個人題庫
+        <span class="si-icon">📝</span> Question Bank
       </div>
       <div class="sidebar-item" onclick="showToast('評分標準開啟中...')">
         <span class="si-icon">📊</span> Rubrics
       </div>
 
-      <div class="sidebar-section-title">帳號</div>
+      <div class="sidebar-section-title">Account</div>
 
       <div class="sidebar-item" id="nav-settings" onclick="goPage('settings')">
-        <span class="si-icon">⚙️</span> 設定
+        <span class="si-icon">⚙️</span> Settings
       </div>
       <div class="sidebar-item" onclick="doLogout()">
-        <span class="si-icon">🚪</span> 登出
+        <span class="si-icon">🚪</span> Logout
       </div>
     </aside>
 
@@ -183,12 +184,12 @@
             <div class="feed-card-header">
               <div class="feed-icon">📣</div>
               <div class="feed-meta">
-                <div class="feed-title">公告更新</div>
+                <div class="feed-title">Announcements更新</div>
                 <div class="feed-time">2026.05.15 13:40</div>
               </div>
             </div>
             <div class="feed-body">
-              課程 <span class="feed-link">資料視覺化-CSS137</span> 更新了公告
+              課程 <span class="feed-link">資料視覺化-CSS137</span> 更新了Announcements
               <div class="highlight-box">
                 <strong>期末分組報告名單</strong>
                 1.期末分組報告名單已經更新報告順序。2.另外如果有還未在分組名單上的同學，請私訊助教做更正。（助教信箱：m136070014@g-mail.nsysu.edu.tw）3.報告時間10分鐘、老師問答5分鐘。4.題目自選，並利用Power BI進行視覺化呈現。5.另外請各組組...
@@ -373,8 +374,8 @@
       <div class="page" id="page-announcements">
         <div style="width:100%">
           <div class="page-header">
-            <h2>公告</h2>
-            <p>共 5 則公告，3 則未讀</p>
+            <h2>Announcements</h2>
+            <p>共 5 則Announcements，3 則未讀</p>
           </div>
           <div class="announce-list">
 
@@ -412,8 +413,8 @@
               <div class="announce-dot read"></div>
               <div class="announce-content">
                 <div class="announce-course">商事法-MIS206</div>
-                <div class="announce-title">期中考成績公告</div>
-                <div class="announce-desc">期中考成績已公告，如有疑問請於辦公時間前來詢問...</div>
+                <div class="announce-title">期中考成績Announcements</div>
+                <div class="announce-desc">期中考成績已Announcements，如有疑問請於辦公時間前來詢問...</div>
                 <div class="announce-date">2026.05.10 16:00</div>
               </div>
             </div>
@@ -445,14 +446,14 @@
               <h3>個人資料</h3>
               <div class="settings-row">
                 <div class="settings-label">姓名<small>顯示於課程與討論中</small></div>
-                <input class="settings-input" value="{{ user_name or '使用者' }}">
+                <input class="settings-input" value="郭家綺">
               </div>
               <div class="settings-row">
                 <div class="settings-label">學號<small>您的學校識別碼</small></div>
-                <input class="settings-input" value="{{ user_id or '' }}" readonly style="background:#f5f5f5">
+                <input class="settings-input" value="B134020005" readonly style="background:#f5f5f5">
               </div>
               <div class="settings-row">
-                <div class="settings-label">電子郵件<small>接收通知與公告</small></div>
+                <div class="settings-label">電子郵件<small>接收通知與Announcements</small></div>
                 <input class="settings-input" value="b134020005@mail.nsysu.edu.tw">
               </div>
               <div style="margin-top:16px;text-align:right">
@@ -463,7 +464,7 @@
             <div class="settings-section">
               <h3>通知設定</h3>
               <div class="settings-row">
-                <div class="settings-label">新公告通知<small>課程有新公告時通知我</small></div>
+                <div class="settings-label">新Announcements通知<small>課程有新Announcements時通知我</small></div>
                 <div class="toggle on" onclick="this.classList.toggle('on')"></div>
               </div>
               <div class="settings-row">
@@ -475,7 +476,7 @@
                 <div class="toggle" onclick="this.classList.toggle('on')"></div>
               </div>
               <div class="settings-row">
-                <div class="settings-label">成績公告<small>成績更新時通知我</small></div>
+                <div class="settings-label">成績Announcements<small>成績更新時通知我</small></div>
                 <div class="toggle on" onclick="this.classList.toggle('on')"></div>
               </div>
             </div>
@@ -503,18 +504,11 @@
     </main>
   </div>
 
-  <footer class="app-footer">
-    Copyright © 2026 TronClass. All Rights Reserved. Wisdom Garden Limited &nbsp;|&nbsp;
-    最佳使用環境：作業系統 Win 7 以上・MAC OS X・瀏覽器：Edge・Chrome 55以上・Firefox 50.0以上・Safari 9.0以上。
-  </footer>
+
 </div>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
-
-<script>
-  const isLoggedIn = {{ 'true' if user_name else 'false' }};
-</script>
-<script src="{{ url_for('static', filename='js/student.js') }}"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

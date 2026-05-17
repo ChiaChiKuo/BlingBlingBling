@@ -1,1 +1,5 @@
+abcd/
+venv/
+__pycache__/
+*.pyc
 *.db
