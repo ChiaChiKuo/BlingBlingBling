@@ -1,4 +1,9 @@
+import os
 import sqlite3
+
+# 如果資料庫已存在就刪掉
+if os.path.exists("project.db"):
+    os.remove("project.db")
 
 # 1. 建立或連接到資料庫檔案
 conn = sqlite3.connect("project.db")

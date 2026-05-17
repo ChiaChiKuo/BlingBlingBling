@@ -98,5 +98,8 @@ CREATE TABLE Material(
 );
 INSERT INTO Student VALUES ('B0111111111','Amy','B011111111@nsysu.student.edu.tw','Amy111');
 INSERT INTO Student VALUES ('B0111111112','Andy','B011111112@nsysu.student.edu.tw','Andy112');
-INSERT INTO Teacher VALUES ('T123456789','Jessica','T123456789@nsysu.student.edu.tw','T12345Jes');
+INSERT INTO Teacher VALUES ('T123456789','pclo','T123456789@nsysu.student.edu.tw','T12345pclo');
 INSERT INTO Teacher VALUES ('T192837465','Harry','T192837465@nsysu.student.edu.tw','T19283Har');
+INSERT INTO Course VALUES ('MIS205', FALSE, '資料庫管理', '114_2', '一堂非常棒的課');
+INSERT INTO Teaches VALUES ('MIS205', 'T123456789');
+INSERT INTO Enrolls VALUES ('B0111111111', '0000000001', 'MIS205', '2');
