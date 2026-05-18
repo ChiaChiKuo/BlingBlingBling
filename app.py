@@ -13,14 +13,25 @@ def get_db():
 # 首頁 - 導向登入頁
 @app.route("/")
 def home():
-    if 'user_id' in session:
-        if session['role'] == 'student':
-            return redirect(url_for('student_dashboard'))
-        elif session['role'] == 'teacher':
-            return redirect(url_for('teacher_dashboard'))
-    return render_template('login.html')
+    return render_template("login.html")
 
-    return render_template('index.html')
+
+@app.route("/login", methods=["POST"])
+def login():
+
+    role = request.form["role"]
+    user_id = request.form["user_id"]
+    password = request.form["password"]
+
+    # 假設驗證成功
+    session['user_id'] = user_id
+    session['role'] = role
+    session['user_name'] = user_id   # 新增這行
+
+    if role == 'student':
+        return redirect(url_for('student_dashboard'))
+    else:
+        return redirect(url_for('teacher_dashboard'))
 
 # 學生儀表板
 @app.route("/student")
