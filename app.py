@@ -23,15 +23,52 @@ def login():
     user_id = request.form["user_id"]
     password = request.form["password"]
 
-    # 假設驗證成功
-    session['user_id'] = user_id
-    session['role'] = role
-    session['user_name'] = user_id   # 新增這行
+    conn = get_db()
+    cursor = conn.cursor()
 
     if role == 'student':
-        return redirect(url_for('student_dashboard'))
+
+        cursor.execute("""
+            SELECT * FROM Student
+            WHERE student_id = ? AND password = ?
+        """, (user_id, password))
+
+        user = cursor.fetchone()
+
+        if user:
+
+            session["user_id"] = user["student_id"]
+            session["user_name"] = user["student_name"]
+            session["role"] = "student"
+
+            conn.close()
+            return redirect(url_for("student_dashboard"))
+
+        else:
+            conn.close()
+            return render_template("login.html", error="帳號或密碼錯誤")
+
     else:
-        return redirect(url_for('teacher_dashboard'))
+
+        cursor.execute("""
+            SELECT * FROM Teacher
+            WHERE teacher_id = ? AND password = ?
+        """, (user_id, password))
+
+        user = cursor.fetchone()
+
+        if user:
+
+            session["user_id"] = user["teacher_id"]
+            session["user_name"] = user["teacher_name"]
+            session["role"] = "teacher"
+
+            conn.close()
+            return redirect(url_for("teacher_dashboard"))
+        
+        else:
+            conn.close()
+            return render_template("login.html", error="帳號或密碼錯誤")
 
 # 登入
 @app.route("/login", methods=["GET", "POST"])
