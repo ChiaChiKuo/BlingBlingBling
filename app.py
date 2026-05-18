@@ -33,6 +33,47 @@ def login():
     else:
         return redirect(url_for('teacher_dashboard'))
 
+# 登入
+@app.route("/login", methods=["GET", "POST"])
+def login_page():
+    if request.method == "GET":
+        return render_template('login.html')
+
+    role = request.form.get("role", "").strip()
+    user_id = request.form.get("user_id", "").strip()
+    password = request.form.get("password", "")
+
+    if role not in ("student", "teacher"):
+        return render_template('login.html', error="帳號或密碼錯誤")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    if role == "student":
+        cursor.execute(
+            "SELECT student_name AS name FROM Student WHERE student_id = ? AND password = ?",
+            (user_id, password)
+        )
+    else:
+        cursor.execute(
+            "SELECT teacher_name AS name FROM Teacher WHERE teacher_id = ? AND password = ?",
+            (user_id, password)
+        )
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return render_template('login.html', error="帳號或密碼錯誤")
+
+    session["role"] = role
+    session["user_id"] = user_id
+    session["user_name"] = row["name"]
+
+    if role == "student":
+        return redirect(url_for('student_dashboard'))
+    return redirect(url_for('teacher_dashboard'))
+
 # 學生儀表板
 @app.route("/student")
 def student_dashboard():
@@ -98,13 +139,40 @@ def teacher_dashboard():
 # 登出
 @app.route("/logout")
 def logout():
-    print("=" * 40)
-    print("登出前 session:", dict(session))
     session.clear()
-    print("登出後 session:", dict(session))
-    print("跳轉到 home()")
-    print("=" * 40)
     return redirect(url_for('home'))
+
+# API: 取得當前使用者的課程（學生/教師）
+@app.route("/api/my_courses")
+def get_my_courses():
+    if "user_id" not in session or "role" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    if session["role"] == "student":
+        cursor.execute("""
+            SELECT c.*
+            FROM Course c
+            JOIN Enrolls e ON c.course_id = e.course_id
+            WHERE e.student_id = ?
+        """, (session["user_id"],))
+    elif session["role"] == "teacher":
+        cursor.execute("""
+            SELECT c.*
+            FROM Course c
+            JOIN Teaches t ON c.course_id = t.course_id
+            WHERE t.teacher_id = ?
+        """, (session["user_id"],))
+    else:
+        conn.close()
+        return jsonify({"error": "Invalid role"}), 403
+
+    courses = cursor.fetchall()
+    conn.close()
+
+    return jsonify({"courses": [dict(course) for course in courses]})
 
 # API: 獲取課程學生列表（教師用）
 @app.route("/api/course/<course_id>/students")

@@ -300,22 +300,7 @@
           <button class="btn-primary" onclick="showToast('開課功能開發中')" style="margin-top: 12px;">➕ 開設新課程</button>
         </div>
         <div class="courses-grid">
-          {% for course in courses %}
-          <div class="course-card" onclick="showToast('課程管理頁面開發中')">
-            <div class="course-banner" style="background:linear-gradient(135deg,#e0f7fa,#b2ebf2)">📚</div>
-            <div class="course-body">
-              <span class="course-tag" style="background:#e0f7fa;color:#0097a7">授課中</span>
-              <div class="course-name">{{ course.course_name }}</div>
-              <div class="course-dept">課程代碼：{{ course.course_id }}</div>
-              <div class="course-stats">
-                <span>👥 {{ course.student_count or 0 }} 名學生</span>
-                <span>📊 成績管理</span>
-              </div>
-            </div>
-          </div>
-          {% else %}
-          <p style="color: #999;">目前沒有教授的課程</p>
-          {% endfor %}
+          <!-- Frontend: populate course cards here using /api/my_courses -->
         </div>
       </div>
 
