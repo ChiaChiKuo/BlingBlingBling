@@ -16,63 +16,9 @@ def home():
     return render_template("login.html")
 
 
-@app.route("/login", methods=["POST"])
-def login():
-
-    role = request.form["role"]
-    user_id = request.form["user_id"]
-    password = request.form["password"]
-
-    conn = get_db()
-    cursor = conn.cursor()
-
-    if role == 'student':
-
-        cursor.execute("""
-            SELECT * FROM Student
-            WHERE student_id = ? AND password = ?
-        """, (user_id, password))
-
-        user = cursor.fetchone()
-
-        if user:
-
-            session["user_id"] = user["student_id"]
-            session["user_name"] = user["student_name"]
-            session["role"] = "student"
-
-            conn.close()
-            return redirect(url_for("student_dashboard"))
-
-        else:
-            conn.close()
-            return render_template("login.html", error="帳號或密碼錯誤")
-
-    else:
-
-        cursor.execute("""
-            SELECT * FROM Teacher
-            WHERE teacher_id = ? AND password = ?
-        """, (user_id, password))
-
-        user = cursor.fetchone()
-
-        if user:
-
-            session["user_id"] = user["teacher_id"]
-            session["user_name"] = user["teacher_name"]
-            session["role"] = "teacher"
-
-            conn.close()
-            return redirect(url_for("teacher_dashboard"))
-        
-        else:
-            conn.close()
-            return render_template("login.html", error="帳號或密碼錯誤")
-
 # 登入
 @app.route("/login", methods=["GET", "POST"])
-def login_page():
+def login():
     if request.method == "GET":
         return render_template('login.html')
 
@@ -253,6 +199,84 @@ def create_announcement():
     conn.close()
     
     return jsonify({"success": True, "notification_id": notification_id})
+
+# API: 獲取單一課程詳細資訊
+@app.route("/api/course/<course_id>")
+def get_course_detail(course_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # 獲取課程基本資訊
+    cursor.execute("""
+        SELECT c.*, 
+               GROUP_CONCAT(DISTINCT t.teacher_name) as teachers
+        FROM Course c
+        LEFT JOIN Teaches te ON c.course_id = te.course_id
+        LEFT JOIN Teacher t ON te.teacher_id = t.teacher_id
+        WHERE c.course_id = ?
+        GROUP BY c.course_id
+    """, (course_id,))
+    
+    course = cursor.fetchone()
+    
+    if not course:
+        conn.close()
+        return jsonify({"error": "Course not found"}), 404
+    
+    # 獲取課程公告
+    cursor.execute("""
+        SELECT notification_id, information, due_date, type
+        FROM Notification
+        WHERE course_id = ?
+        ORDER BY due_date DESC LIMIT 5
+    """, (course_id,))
+    announcements = cursor.fetchall()
+    
+    # 獲取課程單元
+    cursor.execute("""
+        SELECT module_id, title, description
+        FROM Module
+        WHERE course_id = ?
+        ORDER BY module_id
+    """, (course_id,))
+    modules = cursor.fetchall()
+    
+    conn.close()
+    
+    return jsonify({
+        "course": dict(course),
+        "announcements": [dict(a) for a in announcements],
+        "modules": [dict(m) for m in modules]
+    })
+
+
+# API: 獲取課程教材
+@app.route("/api/course/<course_id>/materials")
+def get_course_materials(course_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT m.module_id, m.title, mat.material
+        FROM Module m
+        LEFT JOIN Material mat ON m.module_id = mat.module_id
+        WHERE m.course_id = ?
+        ORDER BY m.module_id
+    """, (course_id,))
+    
+    materials = cursor.fetchall()
+    conn.close()
+    
+    return jsonify({"materials": [dict(m) for m in materials]})
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

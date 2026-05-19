@@ -279,14 +279,15 @@
       </div>
 
       <!-- COURSES -->
+      <!-- COURSES -->
       <div class="page" id="page-courses">
         <div style="width:100%">
           <div class="page-header">
             <h2>我的課程</h2>
-            <p>本學期共修 6 門課程</p>
+            <p id="course-count">載入中...</p>
           </div>
-          <div class="courses-grid">
-            <!-- Frontend: populate course cards here using /api/my_courses -->
+          <div class="courses-grid" id="courses-container">
+            <div class="loading-state">載入課程中...</div>
           </div>
         </div>
       </div>
@@ -421,7 +422,68 @@
           </div>
         </div>
       </div>
+      <!-- COURSE DETAIL -->
+      <div class="page" id="page-course-detail">
+        <div style="width:100%">
+          <!-- 返回按鈕 -->
+          <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <button class="back-btn" onclick="goPage('courses')">← 返回我的課程</button>
+              <h2 id="course-detail-title" style="margin-top: 16px;">課程名稱</h2>
+              <p id="course-detail-info">載入中...</p>
+            </div>
+          </div>
 
+          <!-- 課程內容標籤頁 -->
+          <div class="course-tabs">
+            <div class="course-tab active" onclick="switchCourseTab('overview', event)">課程概述</div>
+            <div class="course-tab" onclick="switchCourseTab('modules', event)">單元內容</div>
+            <div class="course-tab" onclick="switchCourseTab('announcements', event)">公告</div>
+          </div>
+
+          <!-- 課程概述 -->
+          <div id="course-overview" class="course-tab-content active">
+            <div class="settings-section">
+              <h3>課程簡介</h3>
+              <p id="course-description" style="line-height: 1.6; color: #555;">載入中...</p>
+            </div>
+
+            <div class="settings-section">
+              <h3>授課教師</h3>
+              <p id="course-teachers" style="color: #555;">載入中...</p>
+            </div>
+
+            <div class="settings-section">
+              <h3>課程資訊</h3>
+              <table style="width: 100%;">
+                <tr><td style="padding: 8px 0;"><strong>學分數：</strong></td><td id="course-credits">-</td></tr>
+                <tr><td style="padding: 8px 0;"><strong>學期：</strong></td><td id="course-semester">-</td></tr>
+                <tr><td style="padding: 8px 0;"><strong>上課方式：</strong></td><td id="course-mode">-</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- 單元內容 -->
+          <div id="course-modules" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>課程單元</h3>
+              <div id="modules-list" class="modules-list">
+                <p>載入中...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 公告 -->
+          <div id="course-announcements" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>課程公告</h3>
+              <div id="announcements-list" class="announce-list">
+                <p>載入中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
