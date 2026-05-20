@@ -335,17 +335,127 @@ function switchCourseTab(tabName, event) {
         document.getElementById('course-announcements').style.display = 'block';
     }
 }
-function toggleAllNotifications(masterToggle) {
-    masterToggle.classList.toggle('on');
 
-    const isOn = masterToggle.classList.contains('on');
-    const toggles = document.querySelectorAll('.notification-toggle');
 
-    toggles.forEach(toggle => {
-        if (isOn) {
-            toggle.classList.add('on');
-        } else {
-            toggle.classList.remove('on');
-        }
-    });
+
+//通知按鈕狀態變化
+// ── 通知設定 ──
+function toggleAllNotifications(el) {
+  el.classList.toggle('on');
+  const isOn = el.classList.contains('on');
+
+
+  // 儲存「全部通知」本身的設定到後端
+  fetch('/api/notification_setting', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: '全部通知', notification_switch: isOn })
+  }).catch(err => console.error('儲存失敗', err));
+
+
+  // 根據全部通知的狀態，強制同步所有個別開關
+  document.querySelectorAll('.notification-toggle').forEach(toggle => {
+    if (isOn) {
+      toggle.classList.add('on');
+    } else {
+      toggle.classList.remove('on');
+    }
+    const label = toggle.closest('.settings-row')
+                       .querySelector('.settings-label')
+                       .childNodes[0].textContent.trim();
+    fetch('/api/notification_setting', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: label, notification_switch: isOn })
+    }).catch(err => console.error('儲存失敗', err));
+  });
 }
+
+
+function syncAllToggle() {
+  const allToggles = document.querySelectorAll('.notification-toggle');
+ 
+  // 只要「有任何一個」是 on，全部通知就應該是 true (維持開啟)
+  const hasAnyOn = Array.from(allToggles).some(t => t.classList.contains('on'));
+ 
+  const allToggleBtn = document.querySelector('[onclick="toggleAllNotifications(this)"]');
+  if (allToggleBtn) {
+    const wasOn = allToggleBtn.classList.contains('on');
+    const shouldBeOn = hasAnyOn;
+
+
+    // 檢查狀態是否真的有翻轉，避免沒必要的重複更新
+    if (wasOn !== shouldBeOn) {
+      if (shouldBeOn) {
+        allToggleBtn.classList.add('on');
+      } else {
+        allToggleBtn.classList.remove('on');
+      }
+
+
+      // 當全部通知的狀態被連動改變時，立刻同步寫入資料庫(DB)
+      fetch('/api/notification_setting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: '全部通知', notification_switch: shouldBeOn })
+      })
+      .catch(err => console.error('同步更新全部通知資料庫失敗', err));
+    }
+  }
+}
+
+
+// 設定頁面顯示時載入通知設定
+function initNotificationSettings() {
+  fetch('/api/notification_setting')
+    .then(res => res.json())
+    .then(data => {
+      data.settings.forEach(setting => {
+        document.querySelectorAll('.notification-toggle').forEach(toggle => {
+          const label = toggle.closest('.settings-row')
+                             .querySelector('.settings-label')
+                             .childNodes[0].textContent.trim();
+          if (label === setting.type) {
+            if (setting.notification_switch) {
+              toggle.classList.add('on');
+            } else {
+              toggle.classList.remove('on');
+            }
+          }
+        });
+      });
+
+
+      syncAllToggle();
+
+
+      document.querySelectorAll('.notification-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function () {
+            toggle.classList.toggle('on');  
+            const label = toggle.closest('.settings-row')
+                                .querySelector('.settings-label')
+                                .childNodes[0].textContent.trim();
+            const isOn = toggle.classList.contains('on');
+          fetch('/api/notification_setting', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: label, notification_switch: isOn })
+          })
+            .then(() => syncAllToggle())
+            .catch(err => console.error('儲存失敗', err));
+        });
+      });
+    })
+    .catch(err => console.error('載入通知設定失敗', err));
+}
+
+
+// 在原本的 goPage 裡加入設定頁初始化，不覆蓋整個函式
+const _origGoPage = goPage;
+goPage = function(page) {
+  _origGoPage(page);
+  if (page === 'settings') {
+    setTimeout(initNotificationSettings, 100);
+  }
+};
+
