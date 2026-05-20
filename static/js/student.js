@@ -335,3 +335,17 @@ function switchCourseTab(tabName, event) {
         document.getElementById('course-announcements').style.display = 'block';
     }
 }
+function toggleAllNotifications(masterToggle) {
+    masterToggle.classList.toggle('on');
+
+    const isOn = masterToggle.classList.contains('on');
+    const toggles = document.querySelectorAll('.notification-toggle');
+
+    toggles.forEach(toggle => {
+        if (isOn) {
+            toggle.classList.add('on');
+        } else {
+            toggle.classList.remove('on');
+        }
+    });
+}

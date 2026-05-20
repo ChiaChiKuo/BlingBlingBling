@@ -384,24 +384,43 @@
             </div>
 
             <div class="settings-section">
-              <h3>通知設定</h3>
-              <div class="settings-row">
-                <div class="settings-label">新公告通知<small>課程有新公告時通知我</small></div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-label">作業截止提醒<small>作業截止前 24 小時通知</small></div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-label">討論區回覆<small>有人回覆我的討論文章</small></div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-label">成績公告<small>成績更新時通知我</small></div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-            </div>
+  <h3>通知設定</h3>
+
+  <div class="settings-row">
+    <div class="settings-label">全部通知<small>開啟或關閉所有通知</small></div>
+    <div class="toggle on" onclick="toggleAllNotifications(this)"></div>
+  </div>
+
+  <div class="settings-row">
+    <div class="settings-label">新公告通知<small>課程有新公告時通知我</small></div>
+    <div class="toggle notification-toggle on" onclick="this.classList.toggle('on')"></div>
+  </div>
+
+  <div class="settings-row">
+    <div class="settings-label">作業截止提醒<small>作業截止前 24 小時通知</small></div>
+    <div class="toggle notification-toggle on" onclick="this.classList.toggle('on')"></div>
+  </div>
+
+  <div class="settings-row">
+    <div class="settings-label">考試通知<small>考試前提醒我</small></div>
+    <div class="toggle notification-toggle on" onclick="this.classList.toggle('on')"></div>
+  </div>
+
+  <div class="settings-row">
+    <div class="settings-label">課程異動通知<small>課程時間或地點變更時通知我</small></div>
+    <div class="toggle notification-toggle on" onclick="this.classList.toggle('on')"></div>
+  </div>
+
+  <div class="settings-row">
+    <div class="settings-label">討論區回覆<small>有人回覆我的討論文章</small></div>
+    <div class="toggle notification-toggle" onclick="this.classList.toggle('on')"></div>
+  </div>
+
+  <div class="settings-row">
+    <div class="settings-label">成績公告<small>成績更新時通知我</small></div>
+    <div class="toggle notification-toggle on" onclick="this.classList.toggle('on')"></div>
+  </div>
+</div>
 
             <div class="settings-section">
               <h3>外觀與語言</h3>
