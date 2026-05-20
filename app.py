@@ -275,6 +275,68 @@ def get_course_materials(course_id):
     
     return jsonify({"materials": [dict(m) for m in materials]})
 
+# API: 取得學生通知設定
+@app.route("/api/notification_setting", methods=["GET"])
+def get_notification_setting():
+    if "user_id" not in session or session["role"] != "student":
+        return jsonify({"error": "Unauthorized"}), 401
+
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT type, notification_switch FROM Setting WHERE student_id = ?",
+        (session["user_id"],)
+    )
+    settings = cursor.fetchall()
+    conn.close()
+
+
+    return jsonify({"settings": [dict(s) for s in settings]})
+
+
+
+
+# API: 更新單一通知設定
+@app.route("/api/notification_setting", methods=["POST"])
+def update_notification_setting():
+    if "user_id" not in session or session["role"] != "student":
+        return jsonify({"error": "Unauthorized"}), 401
+
+
+    data = request.json
+    notification_type = data.get("type")
+    switch = data.get("notification_switch")  # True / False
+
+
+    if notification_type is None or switch is None:
+        return jsonify({"error": "Missing fields"}), 400
+
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE Setting
+        SET notification_switch = ?
+        WHERE student_id = ? AND type = ?
+    """, (switch, session["user_id"], notification_type))
+    conn.commit()
+    conn.close()
+
+
+    return jsonify({"success": True})
+
+
+@app.route("/api/check_setting")
+def check_setting():
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Setting WHERE student_id = ?", (session["user_id"],))
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify([dict(r) for r in rows])
 
 
 
