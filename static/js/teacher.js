@@ -423,3 +423,101 @@ document.getElementById('login-pass').addEventListener('keydown', e => {
 document.getElementById('login-user').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
 });
+
+
+
+// 儲存老師的課程列表（用於選擇課程）
+let teacherCourses = [];
+
+// 發起線上課程
+function createLiveRoom() {
+    showToast('正在建立線上課程房間...');
+    
+    fetch('/api/create_live_room', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.need_course) {
+            // 需要選擇課程
+            teacherCourses = data.courses;
+            showCourseSelectionDialog();
+        } else if (data.success) {
+            // 房間建立成功，自動開啟 Screego 畫面
+            window.open(data.room_url, '_blank');
+            showToast('房間已建立！公告已發布，學生可從公告區加入');
+        } else {
+            showToast('建立失敗：' + (data.error || '未知錯誤'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('建立失敗，請稍後再試');
+    });
+}
+
+// 顯示課程選擇對話框
+function showCourseSelectionDialog() {
+    let courseOptions = '';
+    teacherCourses.forEach(course => {
+        courseOptions += `<option value="${course.course_id}">${course.course_name}</option>`;
+    });
+    
+    const dialogHtml = `
+        <div id="courseDialog" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div style="background: white; border-radius: 16px; padding: 24px; width: 350px;">
+                <h3 style="margin-bottom: 16px;">選擇課程</h3>
+                <p style="margin-bottom: 12px; color: #666;">請選擇要開直播的課程：</p>
+                <select id="courseSelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;">
+                    ${courseOptions}
+                </select>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="closeDialog()" style="padding: 8px 16px; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">取消</button>
+                    <button onclick="confirmCreateRoom()" style="padding: 8px 16px; background: #00bcd4; color: white; border: none; border-radius: 6px; cursor: pointer;">確定開課</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', dialogHtml);
+}
+
+// 關閉對話框
+function closeDialog() {
+    const dialog = document.getElementById('courseDialog');
+    if (dialog) dialog.remove();
+}
+
+// 確認建立房間
+function confirmCreateRoom() {
+    const courseSelect = document.getElementById('courseSelect');
+    const course_id = courseSelect.value;
+    
+    closeDialog();
+    showToast('正在建立房間並發布公告...');
+    
+    fetch('/api/create_live_room', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ course_id: course_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.open(data.room_url, '_blank');
+            showToast('房間已建立！公告已發布，學生可從公告區加入');
+        } else {
+            showToast('建立失敗：' + (data.error || '未知錯誤'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('建立失敗，請稍後再試');
+    });
+}

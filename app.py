@@ -1,8 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sqlite3
 
+import uuid
+import time
+
 app = Flask(__name__)
 app.secret_key = 'nsysu_learning_platform_secret_key_2026'
+
+# Screego 官方公開服務（不用自己部署）
+SCREEGO_URL = "https://app.screego.net"
 
 # 資料庫連線輔助函數
 def get_db():
@@ -67,10 +73,23 @@ def student_dashboard():
     cursor = conn.cursor()
     
     # 獲取學生的課程
+    # 獲取學生的公告（只顯示最新的線上課程公告）
     cursor.execute("""
-        SELECT c.* FROM Course c
-        JOIN Enrolls e ON c.course_id = e.course_id
-        WHERE e.student_id = ?
+        SELECT n.*, c.course_name 
+        FROM Notification n
+        JOIN Course c ON n.course_id = c.course_id
+        WHERE n.course_id IN (
+            SELECT course_id FROM Enrolls WHERE student_id = ?
+        )
+        AND (
+            n.type != '線上課程' 
+            OR n.notification_id = (
+                SELECT notification_id FROM Notification 
+                WHERE course_id = n.course_id AND type = '線上課程'
+                ORDER BY due_date DESC LIMIT 1
+            )
+        )
+        ORDER BY n.due_date DESC LIMIT 10
     """, (session["user_id"],))
     courses = cursor.fetchall()
     
@@ -339,6 +358,82 @@ def check_setting():
     return jsonify([dict(r) for r in rows])
 
 
+# API: 老師發起線上課程，自動建立 Screego 房間並發布公告
+@app.route("/api/create_live_room", methods=["POST"])
+def create_live_room():
+    """老師發起線上課程，自動建立 Screego 房間並發布公告"""
+    if "user_id" not in session or session["role"] != "teacher":
+        return jsonify({"error": "未登入或無權限"}), 401
+    
+    # 取得老師教授的課程
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT c.course_id, c.course_name FROM Course c
+        JOIN Teaches t ON c.course_id = t.course_id
+        WHERE t.teacher_id = ?
+    """, (session["user_id"],))
+    courses = cursor.fetchall()
+    
+    if not courses:
+        conn.close()
+        return jsonify({"error": "您目前沒有教授的課程"}), 400
+    
+    # 如果沒有指定課程，回傳課程列表
+    course_id = request.json.get("course_id") if request.json else None
+    
+    if not course_id:
+        conn.close()
+        return jsonify({
+            "need_course": True,
+            "courses": [{"course_id": c["course_id"], "course_name": c["course_name"]} for c in courses]
+        }), 200
+    
+    # 產生唯一的房間名稱（用 uuid 確保不重複）
+    room_name = str(uuid.uuid4())[:8]
+    room_url = f"{SCREEGO_URL}/?room={room_name}"
+    
+    # ✅ 檢查是否已有進行中的直播公告
+    cursor.execute("""
+        SELECT notification_id FROM Notification 
+        WHERE course_id = ? AND type = '線上課程' AND due_date > date('now')
+    """, (course_id,))
+    existing = cursor.fetchone()
+    
+    notification_id = str(uuid.uuid4())[:8]
+    information = f"""【線上課程】老師已發起線上直播課程！
+
+點擊下方連結加入課程，觀看老師螢幕畫面：
+
+👉 {room_url} 👈
+
+（此連結在本次課程結束後失效）"""
+    
+    if existing:
+        # 更新現有的公告（保留開課紀錄，只更新連結和日期）
+        cursor.execute("""
+            UPDATE Notification 
+            SET information = ?, due_date = date('now', '+7 days')
+            WHERE course_id = ? AND type = '線上課程' AND due_date > date('now')
+        """, (information, course_id))
+        print(f"已更新課程 {course_id} 的直播公告")
+    else:
+        # 新增新的公告
+        cursor.execute("""
+            INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)
+            VALUES (?, ?, ?, ?, ?, date('now', '+7 days'))
+        """, (session["user_id"], notification_id, course_id, "線上課程", information))
+        print(f"已新增課程 {course_id} 的直播公告")
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        "success": True,
+        "room_url": room_url,
+        "course_id": course_id,
+        "message": "房間已建立！公告已自動發布到學生公告區"
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
