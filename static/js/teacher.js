@@ -618,7 +618,7 @@ async function deleteAnnouncement(item) {
         showToast('刪除失敗');
     }
 
-
+}
 
 // 儲存老師的課程列表（用於選擇課程）
 let teacherCourses = [];
