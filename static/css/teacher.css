@@ -1004,3 +1004,94 @@
 .btn-primary:hover {
     background: #2980b9;
 }
+.announce-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit-announcement,
+.btn-delete-announcement {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-announcement {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.btn-edit-announcement:hover {
+    background: #bbdefb;
+}
+
+.btn-delete-announcement {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.btn-delete-announcement:hover {
+    background: #ffcdd2;
+}
+.edit-announcement-content {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1.5px solid #d0d7de;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.edit-announcement-date {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border: 1.5px solid #d0d7de;
+    border-radius: 8px;
+    font-family: inherit;
+}
+
+.btn-save-announcement,
+.btn-cancel-announcement {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-save-announcement {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.btn-cancel-announcement {
+    background: #eeeeee;
+    color: #555;
+}
+.edit-announcement-title {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid #d0d7de;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.edit-announcement-desc {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px;
+    border: 1.5px solid #d0d7de;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}

@@ -218,6 +218,21 @@ function displayCourseDetail(data) {
     displayAnnouncements(announcements);
 }
 
+function splitAnnouncementInfo(info) {
+    if (!info) {
+        return {
+            title: '公告',
+            content: ''
+        };
+    }
+
+    const parts = info.split('\n\n');
+
+    return {
+        title: parts[0] || '公告',
+        content: parts.slice(1).join('\n\n') || ''
+    };
+}
 // 顯示公告列表
 function displayAnnouncements(announcements) {
     const container = document.getElementById('announcements-list');
@@ -227,16 +242,44 @@ function displayAnnouncements(announcements) {
         return;
     }
     
-    container.innerHTML = announcements.map(a => `
-        <div class="announce-item">
+container.innerHTML = announcements.map(a => {
+    const parsed = splitAnnouncementInfo(a.information || '');
+
+    return `
+        <div class="announce-item"
+             data-notification-id="${a.notification_id}"
+             data-course-id="${currentCourseId}">
+
             <div class="announce-dot"></div>
+
             <div class="announce-content">
-                <div class="announce-title">${escapeHtml(a.type || '公告')}</div>
-                <div class="announce-desc">${escapeHtml(a.information || '')}</div>
-                <div class="announce-date">${a.due_date || '日期未定'}</div>
+
+                <div class="announce-title">
+                    ${escapeHtml(parsed.title)}
+                </div>
+
+                <div class="announce-desc">
+                    ${escapeHtml(parsed.content)}
+                </div>
+
+                <div class="announce-date">
+                    ${a.due_date || '日期未定'}
+                </div>
+
+                <div class="announce-actions">
+                    <button class="btn-edit-announcement">
+                        ✏️ 編輯
+                    </button>
+
+                    <button class="btn-delete-announcement">
+                        🗑️ 刪除
+                    </button>
+                </div>
+
             </div>
         </div>
-    `).join('');
+    `;
+}).join('');
 }
 
 // 發布課程公告
@@ -423,3 +466,155 @@ document.getElementById('login-pass').addEventListener('keydown', e => {
 document.getElementById('login-user').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
 });
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('btn-edit-announcement')) {
+        const item = e.target.closest('.announce-item');
+        enterEditMode(item);
+    }
+
+    if (e.target.classList.contains('btn-delete-announcement')) {
+        const item = e.target.closest('.announce-item');
+        deleteAnnouncement(item);
+    }
+
+    if (e.target.classList.contains('btn-save-announcement')) {
+        const item = e.target.closest('.announce-item');
+        saveAnnouncement(item);
+    }
+
+    if (e.target.classList.contains('btn-cancel-announcement')) {
+        const item = e.target.closest('.announce-item');
+        cancelEditMode(item);
+    }
+});
+
+function enterEditMode(item) {
+    const titleElem = item.querySelector('.announce-title');
+    const descElem = item.querySelector('.announce-desc');
+    const dateElem = item.querySelector('.announce-date');
+    const actions = item.querySelector('.announce-actions');
+
+    const oldTitle = titleElem.textContent.trim();
+    const oldDesc = descElem ? descElem.textContent.trim() : '';
+    const oldDate = dateElem.textContent.trim();
+
+    item.dataset.oldTitle = oldTitle;
+    item.dataset.oldDesc = oldDesc;
+    item.dataset.oldDate = oldDate;
+
+    titleElem.innerHTML = `
+        <input type="text"
+               class="edit-announcement-title"
+               value="${oldTitle}">
+    `;
+
+    if (descElem) {
+        descElem.innerHTML = `
+            <textarea class="edit-announcement-desc">${oldDesc}</textarea>
+        `;
+        descElem.style.display = 'block';
+    }
+
+    dateElem.innerHTML = `
+        <input type="date"
+               class="edit-announcement-date"
+               value="${oldDate !== '日期未定' ? oldDate : ''}">
+    `;
+
+    actions.innerHTML = `
+        <button class="btn-save-announcement">💾 儲存</button>
+        <button class="btn-cancel-announcement">取消</button>
+    `;
+}
+
+async function saveAnnouncement(item) {
+    const notificationId = item.dataset.notificationId;
+    const courseId = item.dataset.courseId;
+
+    const newTitle = item.querySelector('.edit-announcement-title').value.trim();
+    const newDesc = item.querySelector('.edit-announcement-desc')?.value.trim() || '';
+    const newDate = item.querySelector('.edit-announcement-date').value;
+
+    if (!newTitle) {
+        showToast('公告標題不能空白');
+        return;
+    }
+
+    const newInformation = newDesc
+        ? `${newTitle}\n\n${newDesc}`
+        : newTitle;
+
+    const response = await fetch(`/api/announcement/${notificationId}/${courseId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            information: newInformation,
+            due_date: newDate
+        })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        const titleElem = item.querySelector('.announce-title');
+        const descElem = item.querySelector('.announce-desc');
+
+        titleElem.textContent = newTitle;
+
+        if (descElem) {
+            descElem.textContent = newDesc;
+            descElem.style.display = newDesc ? 'block' : 'none';
+        }
+
+        item.querySelector('.announce-date').textContent = newDate || '日期未定';
+
+        item.querySelector('.announce-actions').innerHTML = `
+            <button class="btn-edit-announcement">✏️ 編輯</button>
+            <button class="btn-delete-announcement">🗑️ 刪除</button>
+        `;
+
+        showToast('公告已更新！');
+    } else {
+        showToast('更新失敗');
+    }
+}
+
+function cancelEditMode(item) {
+    const titleElem = item.querySelector('.announce-title');
+    const descElem = item.querySelector('.announce-desc');
+
+    titleElem.textContent = item.dataset.oldTitle;
+
+    if (descElem) {
+        descElem.textContent = item.dataset.oldDesc;
+        descElem.style.display = 'block';
+    }
+
+    item.querySelector('.announce-date').textContent = item.dataset.oldDate;
+
+    item.querySelector('.announce-actions').innerHTML = `
+        <button class="btn-edit-announcement">✏️ 編輯</button>
+        <button class="btn-delete-announcement">🗑️ 刪除</button>
+    `;
+}
+
+async function deleteAnnouncement(item) {
+    const confirmed = confirm('確定要刪除這則公告嗎？');
+    if (!confirmed) return;
+
+    const notificationId = item.dataset.notificationId;
+    const courseId = item.dataset.courseId;
+
+    const response = await fetch(`/api/announcement/${notificationId}/${courseId}`, {
+        method: 'DELETE'
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        item.remove();
+        showToast('公告已刪除！');
+    } else {
+        showToast('刪除失敗');
+    }
+}

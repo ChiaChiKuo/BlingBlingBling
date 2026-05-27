@@ -329,14 +329,33 @@
             <h3>歷史公告</h3>
             <div class="announce-list">
               {% for n in notifications %}
-              <div class="announce-item">
-                <div class="announce-dot"></div>
-                <div class="announce-content">
-                  <div class="announce-course">{{ n.course_name }}</div>
-                  <div class="announce-title">{{ n.information[:50] }}</div>
-                  <div class="announce-date">{{ n.due_date }}</div>
-                </div>
-              </div>
+             <div class="announce-item"
+     data-notification-id="{{ n.notification_id }}"
+     data-course-id="{{ n.course_id }}">
+    <div class="announce-dot"></div>
+
+    <div class="announce-content">
+        <div class="announce-course">{{ n.course_name }}</div>
+
+<div class="announce-title">
+    {{ n.information.split('\n\n')[0] }}
+</div>
+
+<div class="announce-desc">
+    {{ n.information.split('\n\n')[1:] | join('\n\n') }}
+</div>
+
+<div class="announce-date">
+    {{ n.due_date }}
+</div>
+
+        <div class="announce-actions">
+            <button class="btn-edit-announcement">✏️ 編輯</button>
+            <button class="btn-delete-announcement">🗑️ 刪除</button>
+        </div>
+    </div>
+</div>
+
               {% else %}
               <p style="color: #999;">暫無公告</p>
               {% endfor %}

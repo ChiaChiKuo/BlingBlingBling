@@ -200,6 +200,64 @@ def create_announcement():
     
     return jsonify({"success": True, "notification_id": notification_id})
 
+# API: 編輯公告（教師用）
+@app.route("/api/announcement/<notification_id>/<course_id>", methods=["PUT"])
+def update_announcement(notification_id, course_id):
+    if "user_id" not in session or session["role"] != "teacher":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    information = data.get("information")
+    due_date = data.get("due_date")
+
+    if not information:
+        return jsonify({"error": "Missing announcement content"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE Notification
+        SET information = ?, due_date = ?
+        WHERE notification_id = ?
+          AND course_id = ?
+          AND teacher_id = ?
+    """, (information, due_date, notification_id, course_id, session["user_id"]))
+
+    conn.commit()
+    updated = cursor.rowcount
+    conn.close()
+
+    if updated == 0:
+        return jsonify({"error": "Announcement not found or permission denied"}), 404
+
+    return jsonify({"success": True})
+
+
+# API: 刪除公告（教師用）
+@app.route("/api/announcement/<notification_id>/<course_id>", methods=["DELETE"])
+def delete_announcement(notification_id, course_id):
+    if "user_id" not in session or session["role"] != "teacher":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM Notification
+        WHERE notification_id = ?
+          AND course_id = ?
+          AND teacher_id = ?
+    """, (notification_id, course_id, session["user_id"]))
+
+    conn.commit()
+    deleted = cursor.rowcount
+    conn.close()
+
+    if deleted == 0:
+        return jsonify({"error": "Announcement not found or permission denied"}), 404
+
+    return jsonify({"success": True})
 # API: 獲取單一課程詳細資訊
 @app.route("/api/course/<course_id>")
 def get_course_detail(course_id):
