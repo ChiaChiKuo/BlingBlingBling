@@ -312,6 +312,16 @@
   }
   .nav-icon-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
+  .nav-icon-btn a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+  }
+
   .notif-badge {
     position: absolute;
     top: 2px; right: 2px;

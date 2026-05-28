@@ -138,6 +138,66 @@ def teacher_dashboard():
                          courses=courses,
                          notifications=notifications)
 
+@app.route("/student/calendar")
+def student_calendar():
+
+    if "user_id" not in session or session["role"] != "student":
+        return redirect(url_for("login_page"))
+
+    return render_template(
+        "calendar.html",
+        user_name=session["user_name"],
+        role="student"
+    )
+
+
+@app.route("/teacher/calendar")
+def teacher_calendar():
+
+    if "user_id" not in session or session["role"] != "teacher":
+        return redirect(url_for("login_page"))
+
+    return render_template(
+        "calendar.html",
+        user_name=session["user_name"],
+        role="teacher"
+    )
+
+@app.route("/events")
+def events():
+
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+
+    user_id = session["user_id"]
+    role = session["role"]
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    if role == "student":
+
+        cursor.execute("""
+            SELECT title, due_date AS start
+            FROM Notification
+            WHERE course_id IN (
+                SELECT course_id FROM Enrolls WHERE student_id = ?
+            )
+        """, (user_id,))
+
+    else:
+
+        cursor.execute("""
+            SELECT title, due_date AS start
+            FROM Notification
+            WHERE teacher_id = ?
+        """, (user_id,))
+
+    events = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return jsonify(events)
+
 # 登出
 @app.route("/logout")
 def logout():
