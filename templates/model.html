@@ -461,7 +461,12 @@
           <div class="course-tabs">
             <div class="course-tab active" onclick="switchCourseTab('overview', event)">課程概述</div>
             <div class="course-tab" onclick="switchCourseTab('modules', event)">單元內容</div>
-            <div class="course-tab" onclick="switchCourseTab('announcements', event)">公告</div>
+            <div class="course-tab" onclick="switchCourseTab('announcements', event)">一般公告</div>
+            <div class="course-tab" onclick="switchCourseTab('homework', event)">作業通知</div>
+            <div class="course-tab" onclick="switchCourseTab('exam', event)">考試通知</div>
+            <div class="course-tab" onclick="switchCourseTab('courseChange', event)">課程異動</div>
+            <div class="course-tab" onclick="switchCourseTab('discussion', event)">討論區</div>
+            <div class="course-tab" onclick="switchCourseTab('grade', event)">成績公告</div>
           </div>
 
           <!-- 課程概述 -->
@@ -497,10 +502,61 @@
           </div>
 
           <!-- 公告 -->
+          <!-- 一般公告 -->
           <div id="course-announcements" class="course-tab-content" style="display: none;">
             <div class="settings-section">
-              <h3>課程公告</h3>
-              <div id="announcements-list" class="announce-list">
+              <h3>📢 一般公告</h3>
+              <div id="announcements-list-general" class="announce-list">
+                <p>載入中...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 作業通知 -->
+          <div id="course-homework" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>📝 作業通知</h3>
+              <div id="announcements-list-homework" class="announce-list">
+                <p>載入中...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 考試通知 -->
+          <div id="course-exam" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>📋 考試通知</h3>
+              <div id="announcements-list-exam" class="announce-list">
+                <p>載入中...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 課程異動通知 -->
+          <div id="course-courseChange" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>🔄 課程異動通知</h3>
+              <div id="announcements-list-courseChange" class="announce-list">
+                <p>載入中...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 討論區 -->
+          <div id="course-discussion" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>💬 討論區</h3>
+              <div id="announcements-list-discussion" class="announce-list">
+                <p>載入中...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 成績公告 -->
+          <div id="course-grade" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>📊 成績公告</h3>
+              <div id="announcements-list-grade" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>

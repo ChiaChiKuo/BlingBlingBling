@@ -256,31 +256,70 @@ function displayCourseDetail(data) {
     document.getElementById('course-mode').textContent = course.is_online ? '線上課程' : '實體課程';
     
     // 顯示公告
-    displayAnnouncements(announcements);
+    displayAnnouncementsByType(announcements);
     
     // 顯示單元
     displayModules(modules);
 }
 
-// 顯示公告列表
-function displayAnnouncements(announcements) {
-    const container = document.getElementById('announcements-list');
+// 依照類型顯示公告（分類到不同的分頁）
+function displayAnnouncementsByType(announcements) {
+    // 定義各類型的容器 ID 對應
+    const typeMapping = {
+        '公告': 'announcements-list-general',
+        '一般公告': 'announcements-list-general',
+        '作業通知': 'announcements-list-homework',
+        '考試通知': 'announcements-list-exam',
+        '課程異動通知': 'announcements-list-courseChange',
+        '討論區': 'announcements-list-discussion',
+        '成績公告': 'announcements-list-grade'
+    };
+    
+    // 初始化所有容器為「暫無公告」
+    for (const containerId of Object.values(typeMapping)) {
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = '<p style="color: #999;">暫無此類型公告</p>';
+        }
+    }
     
     if (!announcements || announcements.length === 0) {
-        container.innerHTML = '<p style="color: #999;">暫無公告</p>';
         return;
     }
     
-    container.innerHTML = announcements.map(a => `
-        <div class="announce-item">
-            <div class="announce-dot"></div>
-            <div class="announce-content">
-                <div class="announce-title">${escapeHtml(a.type || '公告')}</div>
-                <div class="announce-desc">${escapeHtml(a.information || '')}</div>
-                <div class="announce-date">${a.due_date || '日期未定'}</div>
-            </div>
-        </div>
-    `).join('');
+    // 將公告分類
+    for (const announcement of announcements) {
+        let type = announcement.type || '公告';
+        
+        // 處理可能的類型名稱差異
+        if (type === '公告') type = '公告';
+        if (type === '一般公告') type = '公告';
+        
+        const containerId = typeMapping[type];
+        
+        if (containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                // 如果當前容器顯示的是「暫無公告」，清空它
+                if (container.innerHTML.includes('暫無此類型公告')) {
+                    container.innerHTML = '';
+                }
+                
+                // 新增公告卡片
+                const announcementHtml = `
+                    <div class="announce-item">
+                        <div class="announce-dot"></div>
+                        <div class="announce-content">
+                            <div class="announce-title">${escapeHtml(announcement.information ? announcement.information.split('\n')[0] : '無標題')}</div>
+                            <div class="announce-desc">${escapeHtml(announcement.information || '無內容')}</div>
+                            <div class="announce-date">${announcement.due_date || '日期未定'}</div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += announcementHtml;
+            }
+        }
+    }
 }
 
 // 顯示單元列表
@@ -307,32 +346,55 @@ function switchCourseTab(tabName, event) {
     tabs.forEach(tab => {
         tab.classList.remove('active');
     });
-    
-    // 如果有 event 參數，標記當前點擊的標籤
     if (event && event.target) {
         event.target.classList.add('active');
-    } else {
-        // 根據 tabName 找到對應的標籤
-        tabs.forEach(tab => {
-            if ((tabName === 'overview' && tab.textContent === '課程概述') ||
-                (tabName === 'modules' && tab.textContent === '單元內容') ||
-                (tabName === 'announcements' && tab.textContent === '公告')) {
-                tab.classList.add('active');
-            }
-        });
     }
     
-    // 切換內容
-    document.getElementById('course-overview').style.display = 'none';
-    document.getElementById('course-modules').style.display = 'none';
-    document.getElementById('course-announcements').style.display = 'none';
+    // 隱藏所有內容區塊
+    const allContents = [
+        'course-overview',
+        'course-modules',
+        'course-announcements',
+        'course-homework',
+        'course-exam',
+        'course-courseChange',
+        'course-discussion',
+        'course-grade'
+    ];
     
-    if (tabName === 'overview') {
-        document.getElementById('course-overview').style.display = 'block';
-    } else if (tabName === 'modules') {
-        document.getElementById('course-modules').style.display = 'block';
-    } else if (tabName === 'announcements') {
-        document.getElementById('course-announcements').style.display = 'block';
+    allContents.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    
+    // 根據 tabName 顯示對應區塊
+    switch(tabName) {
+        case 'overview':
+            document.getElementById('course-overview').style.display = 'block';
+            break;
+        case 'modules':
+            document.getElementById('course-modules').style.display = 'block';
+            break;
+        case 'announcements':
+            document.getElementById('course-announcements').style.display = 'block';
+            break;
+        case 'homework':
+            document.getElementById('course-homework').style.display = 'block';
+            break;
+        case 'exam':
+            document.getElementById('course-exam').style.display = 'block';
+            break;
+        case 'courseChange':
+            document.getElementById('course-courseChange').style.display = 'block';
+            break;
+        case 'discussion':
+            document.getElementById('course-discussion').style.display = 'block';
+            break;
+        case 'grade':
+            document.getElementById('course-grade').style.display = 'block';
+            break;
+        default:
+            document.getElementById('course-overview').style.display = 'block';
     }
 }
 
