@@ -267,13 +267,14 @@ def create_announcement():
     
     import uuid
     notification_id = str(uuid.uuid4())[:8]
+    announcement_type = data.get("type", "公告")
     
     cursor.execute("""
         INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (session["user_id"], notification_id, data["course_id"], 
-          "公告", data["information"], data.get("due_date")))
-    
+        announcement_type, data["information"], data.get("due_date")))
+        
     conn.commit()
     conn.close()
     
@@ -552,6 +553,7 @@ def create_live_room():
         "course_id": course_id,
         "message": "房間已建立！公告已自動發布到學生公告區"
     })
+
 
 if __name__ == "__main__":
     app.run(debug=True)
