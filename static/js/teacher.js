@@ -214,8 +214,66 @@ function displayCourseDetail(data) {
     document.getElementById('course-credits').textContent = course.credits || 3;
     document.getElementById('course-semester').textContent = course.semester || '114_2';
     document.getElementById('course-mode').textContent = course.is_online ? '線上課程' : '實體課程';
-    
-    displayAnnouncements(announcements);
+
+    loadCategorizedAnnouncements(course.course_id);
+}
+
+// 載入分類公告（教師端）
+async function loadCategorizedAnnouncements(courseId) {
+    try {
+        const response = await fetch(`/api/course/${courseId}`);
+        const data = await response.json();
+        const announcements = data.announcements || [];
+        
+        const categories = {
+            general: [],
+            homework: [],
+            exam: [],
+            courseChange: [],
+            discussion: [],
+            grade: []
+        };
+        
+        announcements.forEach(a => {
+            const type = a.type || '公告';
+            if (type === '公告' || type === '一般公告') {
+                categories.general.push(a);
+            } else if (type === '作業通知') {
+                categories.homework.push(a);
+            } else if (type === '考試通知') {
+                categories.exam.push(a);
+            } else if (type === '課程異動通知') {
+                categories.courseChange.push(a);
+            } else if (type === '討論區') {
+                categories.discussion.push(a);
+            } else if (type === '成績公告') {
+                categories.grade.push(a);
+            }
+        });
+        
+        for (const [cat, list] of Object.entries(categories)) {
+            const container = document.getElementById(`announcements-list-${cat}`);
+            // 👇 加上這行檢查：如果容器不存在就跳過
+            if (!container) continue;
+            
+            if (list.length === 0) {
+                container.innerHTML = '<p style="color: #999;">暫無公告</p>';
+            } else {
+                container.innerHTML = list.map(a => `
+                    <div class="announce-item">
+                        <div class="announce-dot"></div>
+                        <div class="announce-content">
+                            <div class="announce-title">${escapeHtml(a.information ? a.information.split('\n')[0] : '無標題')}</div>
+                            <div class="announce-desc">${escapeHtml(a.information || '無內容')}</div>
+                            <div class="announce-date">${a.due_date || '日期未定'}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('載入公告失敗:', error);
+    }
 }
 
 function splitAnnouncementInfo(info) {
@@ -233,54 +291,7 @@ function splitAnnouncementInfo(info) {
         content: parts.slice(1).join('\n\n') || ''
     };
 }
-// 顯示公告列表
-function displayAnnouncements(announcements) {
-    const container = document.getElementById('announcements-list');
-    
-    if (!announcements || announcements.length === 0) {
-        container.innerHTML = '<p style="color: #999;">暫無公告</p>';
-        return;
-    }
-    
-container.innerHTML = announcements.map(a => {
-    const parsed = splitAnnouncementInfo(a.information || '');
 
-    return `
-        <div class="announce-item"
-             data-notification-id="${a.notification_id}"
-             data-course-id="${currentCourseId}">
-
-            <div class="announce-dot"></div>
-
-            <div class="announce-content">
-
-                <div class="announce-title">
-                    ${escapeHtml(parsed.title)}
-                </div>
-
-                <div class="announce-desc">
-                    ${escapeHtml(parsed.content)}
-                </div>
-
-                <div class="announce-date">
-                    ${a.due_date || '日期未定'}
-                </div>
-
-                <div class="announce-actions">
-                    <button class="btn-edit-announcement">
-                        ✏️ 編輯
-                    </button>
-
-                    <button class="btn-delete-announcement">
-                        🗑️ 刪除
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    `;
-}).join('');
-}
 
 // 發布課程公告
 async function publishCourseAnnouncement() {
@@ -292,7 +303,7 @@ async function publishCourseAnnouncement() {
     const title = document.getElementById('publish-title').value;
     const content = document.getElementById('publish-content').value;
     const date = document.getElementById('publish-date').value;
-    
+    const type = document.getElementById('publish-type') ? document.getElementById('publish-type').value : '公告';
     if (!content) {
         showToast('請填寫公告內容');
         return;
@@ -308,6 +319,7 @@ async function publishCourseAnnouncement() {
             },
             body: JSON.stringify({
                 course_id: currentCourseId,
+                type: type,
                 information: information,
                 due_date: date || new Date().toISOString().split('T')[0]
             })
@@ -324,7 +336,7 @@ async function publishCourseAnnouncement() {
             document.getElementById('publish-title').value = '';
             document.getElementById('publish-content').value = '';
             document.getElementById('publish-date').value = '';
-            
+            if (document.getElementById('publish-type')) document.getElementById('publish-type').value = '公告';
             // 重新載入公告列表（不重新載入整個頁面）
             await refreshAnnouncements();
         }
@@ -361,20 +373,54 @@ function switchCourseTab(tabName, event) {
     if (event && event.target) {
         event.target.classList.add('active');
     }
+
+    // 隱藏所有內容區塊
+    const allContents = [
+        'course-overview',
+        'course-general',
+        'course-homework',
+        'course-exam',
+        'course-courseChange',
+        'course-discussion',
+        'course-grade',
+        'course-publish'
+    ];
     
-    document.getElementById('course-overview').style.display = 'none';
-    document.getElementById('course-announcements').style.display = 'none';
-    document.getElementById('course-publish').style.display = 'none';
+    allContents.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
     
-    if (tabName === 'overview') {
-        document.getElementById('course-overview').style.display = 'block';
-    } else if (tabName === 'announcements') {
-        document.getElementById('course-announcements').style.display = 'block';
-    } else if (tabName === 'publish') {
-        document.getElementById('course-publish').style.display = 'block';
+    // 根據 tabName 顯示對應區塊
+    switch(tabName) {
+        case 'overview':
+            document.getElementById('course-overview').style.display = 'block';
+            break;
+        case 'general':
+            document.getElementById('course-general').style.display = 'block';
+            break;
+        case 'homework':
+            document.getElementById('course-homework').style.display = 'block';
+            break;
+        case 'exam':
+            document.getElementById('course-exam').style.display = 'block';
+            break;
+        case 'courseChange':
+            document.getElementById('course-courseChange').style.display = 'block';
+            break;
+        case 'discussion':
+            document.getElementById('course-discussion').style.display = 'block';
+            break;
+        case 'grade':
+            document.getElementById('course-grade').style.display = 'block';
+            break;
+        case 'publish':
+            document.getElementById('course-publish').style.display = 'block';
+            break;
+        default:
+            document.getElementById('course-overview').style.display = 'block';
     }
 }
-
 // 載入學生列表（原有功能）
 function loadStudents() {
     const course_id = document.getElementById('student_course').value;
@@ -402,6 +448,7 @@ function loadStudents() {
 function publishAnnouncement() {
     const course_id = document.getElementById('announce_course').value;
     const title = document.getElementById('announce_title').value;
+     const type = document.getElementById('announce_type').value;
     const content = document.getElementById('announce_content').value;
     const date = document.getElementById('announce_date').value;
     
@@ -414,11 +461,16 @@ function publishAnnouncement() {
         return;
     }
     
+        let fullContent = content;
+    if (title) {
+        fullContent = title + '\n\n' + content;
+    }
     fetch('/api/announcement', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             course_id: course_id,
+            type: type,
             information: title ? title + '\n\n' + content : content,
             due_date: date
         })
