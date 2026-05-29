@@ -136,7 +136,7 @@ function displayCourses(courses) {
 }
 
 // ========== 頁面切換 ==========
-const pages = ['home', 'courses', 'announcements', 'students', 'settings', 'course-detail'];
+const pages = ['home', 'courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings', 'course-detail'];
 
 function goPage(name) {
     pages.forEach(p => {
@@ -147,7 +147,7 @@ function goPage(name) {
     const targetPage = document.getElementById('page-' + name);
     if (targetPage) targetPage.classList.add('active');
     
-    const navItems = ['home', 'courses', 'announcements', 'students', 'settings'];
+    const navItems = ['home', 'courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings'];
     navItems.forEach(p => {
         const nav = document.getElementById('nav-' + p);
         if (nav) nav.classList.remove('active');
@@ -161,6 +161,63 @@ function goPage(name) {
     if (name === 'courses') {
         setTimeout(() => loadCourses(), 50);
     }
+}
+
+function goTeacherAnnouncementType(pageName, type, title) {
+    goPage(pageName);
+    loadTeacherAnnouncementType(pageName, type, title);
+}
+
+async function loadTeacherAnnouncementType(pageName, type, title) {
+    const list = document.getElementById(`${pageName}-list`);
+    const summary = document.getElementById(`${pageName}-summary`);
+
+    if (!list) return;
+
+    list.innerHTML = '<p style="color: #999;">載入公告中...</p>';
+    if (summary) summary.textContent = `載入${type}中...`;
+
+    try {
+        const response = await fetch(`/api/teacher/announcements?type=${encodeURIComponent(type)}`);
+
+        if (!response.ok) {
+            throw new Error('公告載入失敗');
+        }
+
+        const data = await response.json();
+        renderTeacherAnnouncementList(list, summary, data.announcements || [], type, title);
+    } catch (error) {
+        console.error('公告載入失敗:', error);
+        list.innerHTML = '<p style="color: #999;">公告載入失敗</p>';
+        if (summary) summary.textContent = '公告載入失敗';
+    }
+}
+
+function renderTeacherAnnouncementList(list, summary, announcements, type, title) {
+    if (!announcements.length) {
+        list.innerHTML = '<p style="color: #999;">暫無公告</p>';
+        if (summary) summary.textContent = `已發布0則${type}`;
+        return;
+    }
+
+    if (summary) summary.textContent = `已發布${announcements.length}則${type}`;
+
+    list.innerHTML = announcements.map(a => {
+        const parsed = parseAnnouncementDisplay(a);
+        return `
+            <div class="announce-item"
+                data-notification-id="${a.notification_id}"
+                data-course-id="${a.course_id}">
+                <div class="announce-dot"></div>
+                <div class="announce-content">
+                    <div class="announce-course">課程名稱：${escapeHtml(a.course_name || a.course_id || '未指定課程')}</div>
+                    <div class="announce-title">公告標題：${escapeHtml(parsed.title)}</div>
+                    <div class="announce-desc">公告內容：${escapeHtml(parsed.content)}</div>
+                    <div class="announce-date">日期：${escapeHtml(a.due_date || '日期未定')}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ========== 課程詳情功能 ==========
@@ -264,7 +321,7 @@ async function loadCategorizedAnnouncements(courseId) {
                 container.innerHTML = '<p style="color: #999;">暫無公告</p>';
             }else{
             container.innerHTML = list.map(a => {
-                const parsed = splitAnnouncementInfo(a.information || '');
+                const parsed = parseAnnouncementDisplay(a);
                 return `
                     <div class="announce-item" 
                         data-notification-id="${a.notification_id}" 
@@ -290,18 +347,23 @@ async function loadCategorizedAnnouncements(courseId) {
 }
 
 function splitAnnouncementInfo(info) {
-    if (!info) {
+    return parseAnnouncementDisplay({ information: info });
+}
+
+function parseAnnouncementDisplay(announcement) {
+    const information = announcement.information || '';
+    if (!information) {
         return {
             title: '公告',
             content: ''
         };
     }
 
-    const parts = info.split('\n\n');
+    const parts = information.split(/\n\s*\n/);
 
     return {
-        title: parts[0] || '公告',
-        content: parts.slice(1).join('\n\n') || ''
+        title: (parts[0] || '').trim() || '公告',
+        content: parts.slice(1).join('\n\n').trim()
     };
 }
 

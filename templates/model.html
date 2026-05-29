@@ -120,8 +120,17 @@
       <div class="sidebar-item" id="nav-courses" onclick="goPage('courses')">
         <span class="si-icon">📖</span> 我的課程
       </div>
-      <div class="sidebar-item" id="nav-announcements" onclick="goPage('announcements')">
+      <div class="sidebar-item" id="nav-announcements" onclick="toggleAnnouncementMenu()">
         <span class="si-icon">📢</span> 公告
+        <span class="sidebar-arrow" id="announcement-arrow">▾</span>
+      </div>
+      <div class="sidebar-submenu" id="announcement-submenu">
+        <div class="sidebar-subitem" id="nav-announcements-general" onclick="goAnnouncementCategory('一般公告')">一般公告</div>
+        <div class="sidebar-subitem" id="nav-announcements-homework" onclick="goAnnouncementCategory('作業通知')">作業通知</div>
+        <div class="sidebar-subitem" id="nav-announcements-exam" onclick="goAnnouncementCategory('考試通知')">考試通知</div>
+        <div class="sidebar-subitem" id="nav-announcements-course-change" onclick="goAnnouncementCategory('課程異動通知')">課程異動通知</div>
+        <div class="sidebar-subitem" id="nav-announcements-discussion" onclick="goAnnouncementCategory('討論區')">討論區</div>
+        <div class="sidebar-subitem" id="nav-announcements-grade" onclick="goAnnouncementCategory('成績公告')">成績公告</div>
       </div>
 
       <div class="sidebar-section-title">我的資源</div>
@@ -301,60 +310,9 @@
         <div style="width:100%">
           <div class="page-header">
             <h2>公告</h2>
-            <p>共 5 則公告，3 則未讀</p>
+            <p id="announcement-page-summary">載入公告中...</p>
           </div>
-          <div class="announce-list">
-
-            <div class="announce-item">
-              <div class="announce-dot"></div>
-              <div class="announce-content">
-                <div class="announce-course">資料視覺化-CSS137</div>
-                <div class="announce-title">期末分組報告名單</div>
-                <div class="announce-desc">期末分組報告名單已經更新報告順序。另外如果有還未在分組名單上的同學，請私訊助教做更正...</div>
-                <div class="announce-date">2026.05.15 13:40</div>
-              </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot"></div>
-              <div class="announce-content">
-                <div class="announce-course">管理資訊系統-MIS304</div>
-                <div class="announce-title">5/14 課堂加分活動(5/16 23:59截止)</div>
-                <div class="announce-desc">請同學在截止日前於討論區回覆指定問題，完成後可獲得加分...</div>
-                <div class="announce-date">2026.05.14 10:00</div>
-              </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot"></div>
-              <div class="announce-content">
-                <div class="announce-course">資料庫管理-MIS205</div>
-                <div class="announce-title">第五章作業繳交說明</div>
-                <div class="announce-desc">請完成 Lab5 中所有 SQL 查詢題目，並上傳 .sql 檔案。截止日 5/17...</div>
-                <div class="announce-date">2026.05.13 09:00</div>
-              </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot read"></div>
-              <div class="announce-content">
-                <div class="announce-course">商事法-MIS206</div>
-                <div class="announce-title">期中考成績公告</div>
-                <div class="announce-desc">期中考成績已公告，如有疑問請於辦公時間前來詢問...</div>
-                <div class="announce-date">2026.05.10 16:00</div>
-              </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot read"></div>
-              <div class="announce-content">
-                <div class="announce-course">莎劇與文化詮釋</div>
-                <div class="announce-title">第八週課程調整通知</div>
-                <div class="announce-desc">因教師出差，第八週課程改為線上進行，請同學留意通知...</div>
-                <div class="announce-date">2026.05.08 11:30</div>
-              </div>
-            </div>
-
+          <div id="announcement-list" class="announce-list">
           </div>
         </div>
       </div>
@@ -576,7 +534,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const isLoggedIn = {{ 'true' if user_name else 'false' }};
+  const isLoggedIn = "{{ 'true' if user_name else 'false' }}" === "true";
 </script>
 <script src="{{ url_for('static', filename='js/student.js') }}"></script>
 </body>

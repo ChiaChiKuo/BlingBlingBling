@@ -136,6 +136,7 @@ function displayCourses(courses) {
 
 // ========== 頁面切換 ==========
 const pages = ['home', 'courses', 'announcements', 'settings', 'course-detail'];
+let currentAnnouncementType = '';
 
 function goPage(name) {
     // 隱藏所有頁面
@@ -166,6 +167,118 @@ function goPage(name) {
             loadCourses();
         }, 50);
     }
+
+    if (name === 'announcements') {
+        setTimeout(() => {
+            loadAnnouncements(currentAnnouncementType);
+        }, 50);
+    }
+}
+
+function toggleAnnouncementMenu() {
+    const submenu = document.getElementById('announcement-submenu');
+    const arrow = document.getElementById('announcement-arrow');
+
+    if (submenu) submenu.classList.toggle('open');
+    if (arrow) arrow.classList.toggle('open');
+
+    goAnnouncementCategory('');
+}
+
+function goAnnouncementCategory(type) {
+    currentAnnouncementType = type || '';
+    goPage('announcements');
+}
+
+function updateAnnouncementSubnav(type) {
+    const subItems = {
+        '一般公告': document.getElementById('nav-announcements-general'),
+        '作業通知': document.getElementById('nav-announcements-homework'),
+        '考試通知': document.getElementById('nav-announcements-exam'),
+        '課程異動通知': document.getElementById('nav-announcements-course-change'),
+        '討論區': document.getElementById('nav-announcements-discussion'),
+        '成績公告': document.getElementById('nav-announcements-grade')
+    };
+
+    Object.values(subItems).forEach(item => {
+        if (item) item.classList.remove('active');
+    });
+
+    if (subItems[type]) {
+        subItems[type].classList.add('active');
+    }
+}
+
+async function loadAnnouncements(type = '') {
+    const container = document.getElementById('announcement-list');
+    const summary = document.getElementById('announcement-page-summary');
+
+    if (!container) return;
+
+    updateAnnouncementSubnav(type);
+    container.innerHTML = '<p style="color: #999;">載入公告中...</p>';
+    if (summary) {
+        summary.textContent = type || '全部公告';
+    }
+
+    try {
+        const query = type ? `?type=${encodeURIComponent(type)}` : '';
+        const response = await fetch(`/api/announcements${query}`);
+
+        if (!response.ok) {
+            throw new Error('公告載入失敗');
+        }
+
+        const data = await response.json();
+        renderAnnouncementList(data.announcements || [], type);
+    } catch (error) {
+        console.error('公告載入失敗:', error);
+        container.innerHTML = '<p style="color: #999;">公告載入失敗，請稍後再試</p>';
+        if (summary) summary.textContent = '';
+    }
+}
+
+function parseAnnouncementDisplay(announcement) {
+    const information = announcement.information || '';
+    const parts = information.split(/\n\s*\n/);
+    const title = (parts[0] || '').trim() || '無標題';
+    const content = parts.slice(1).join('\n\n').trim();
+
+    return { title, content };
+}
+
+function renderAnnouncementList(announcements, type = '') {
+    const container = document.getElementById('announcement-list');
+    const summary = document.getElementById('announcement-page-summary');
+
+    if (!container) return;
+
+    if (!announcements.length) {
+        container.innerHTML = '<p style="color: #999;">暫無公告</p>';
+        if (summary) summary.textContent = type ? `${type}：0 則` : '全部公告：0 則';
+        return;
+    }
+
+    if (summary) {
+        summary.textContent = type ? `${type}：${announcements.length} 則` : `全部公告：${announcements.length} 則`;
+    }
+
+    container.innerHTML = announcements.map(announcement => {
+        const parsed = parseAnnouncementDisplay(announcement);
+        const courseName = announcement.course_name || announcement.course_id || '未指定課程';
+
+        return `
+            <div class="announce-item">
+                <div class="announce-dot"></div>
+                <div class="announce-content">
+                    <div class="announce-course">${escapeHtml(courseName)}</div>
+                    <div class="announce-title">${escapeHtml(parsed.title)}</div>
+                    <div class="announce-desc">${escapeHtml(parsed.content)}</div>
+                    <div class="announce-date">${escapeHtml(announcement.due_date || '無截止日期')}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ========== 登出 ==========
@@ -306,12 +419,13 @@ function displayAnnouncementsByType(announcements) {
                 }
                 
                 // 新增公告卡片
+                const parsed = parseAnnouncementDisplay(announcement);
                 const announcementHtml = `
                     <div class="announce-item">
                         <div class="announce-dot"></div>
                         <div class="announce-content">
-                            <div class="announce-title">${escapeHtml(announcement.information ? announcement.information.split('\n')[0] : '無標題')}</div>
-                            <div class="announce-desc">${escapeHtml(announcement.information || '無內容')}</div>
+                            <div class="announce-title">${escapeHtml(parsed.title)}</div>
+                            <div class="announce-desc">${escapeHtml(parsed.content)}</div>
                             <div class="announce-date">${announcement.due_date || '日期未定'}</div>
                         </div>
                     </div>
