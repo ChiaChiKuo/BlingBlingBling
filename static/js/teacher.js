@@ -206,6 +206,11 @@ async function viewCourseDetail(courseId) {
 function displayCourseDetail(data) {
     const course = data.course;
     const announcements = data.announcements || [];
+    if (course && course.course_id) {
+        currentCourseId = course.course_id;
+        console.log('已設定 currentCourseId =', currentCourseId);
+    
+    }
     
     document.getElementById('course-detail-title').textContent = course.course_name;
     document.getElementById('course-detail-info').textContent = `課程代碼：${course.course_id}`;
@@ -253,22 +258,30 @@ async function loadCategorizedAnnouncements(courseId) {
         
         for (const [cat, list] of Object.entries(categories)) {
             const container = document.getElementById(`announcements-list-${cat}`);
-            // 👇 加上這行檢查：如果容器不存在就跳過
             if (!container) continue;
             
             if (list.length === 0) {
                 container.innerHTML = '<p style="color: #999;">暫無公告</p>';
-            } else {
-                container.innerHTML = list.map(a => `
-                    <div class="announce-item">
+            }else{
+            container.innerHTML = list.map(a => {
+                const parsed = splitAnnouncementInfo(a.information || '');
+                return `
+                    <div class="announce-item" 
+                        data-notification-id="${a.notification_id}" 
+                        data-course-id="${courseId}">
                         <div class="announce-dot"></div>
                         <div class="announce-content">
-                            <div class="announce-title">${escapeHtml(a.information ? a.information.split('\n')[0] : '無標題')}</div>
-                            <div class="announce-desc">${escapeHtml(a.information || '無內容')}</div>
+                            <div class="announce-title">${escapeHtml(parsed.title)}</div>
+                            <div class="announce-desc">${escapeHtml(parsed.content)}</div>
                             <div class="announce-date">${a.due_date || '日期未定'}</div>
+                            <div class="announce-actions">
+                                <button class="btn-edit-announcement">✏️ 編輯</button>
+                                <button class="btn-delete-announcement">🗑️ 刪除</button>
+                            </div>
                         </div>
                     </div>
-                `).join('');
+                `;
+            }).join('');
             }
         }
     } catch (error) {
@@ -296,14 +309,15 @@ function splitAnnouncementInfo(info) {
 // 發布課程公告
 async function publishCourseAnnouncement() {
     if (!currentCourseId) {
-        showToast('請先選擇課程');
+        showToast('請從「我的課程」點擊課程後再發布');
         return;
     }
     
     const title = document.getElementById('publish-title').value;
     const content = document.getElementById('publish-content').value;
     const date = document.getElementById('publish-date').value;
-    const type = document.getElementById('publish-type') ? document.getElementById('publish-type').value : '公告';
+    const type = document.getElementById('publish-type')?.value || '公告';
+    
     if (!content) {
         showToast('請填寫公告內容');
         return;
@@ -314,9 +328,7 @@ async function publishCourseAnnouncement() {
     try {
         const response = await fetch('/api/announcement', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 course_id: currentCourseId,
                 type: type,
@@ -325,38 +337,31 @@ async function publishCourseAnnouncement() {
             })
         });
         
-        if (!response.ok) {
-            throw new Error('發布失敗');
-        }
-        
         const result = await response.json();
         if (result.success) {
             showToast('公告發布成功！');
-            // 清空表單
             document.getElementById('publish-title').value = '';
             document.getElementById('publish-content').value = '';
             document.getElementById('publish-date').value = '';
-            if (document.getElementById('publish-type')) document.getElementById('publish-type').value = '公告';
-            // 重新載入公告列表（不重新載入整個頁面）
-            await refreshAnnouncements();
+            await loadCategorizedAnnouncements(currentCourseId);
+        } else {
+            showToast('發布失敗');
         }
-        
     } catch (error) {
         console.error(error);
-        showToast('發布失敗，請稍後再試');
+        showToast('發布失敗');
     }
 }
 
 // 新增：刷新公告列表
 async function refreshAnnouncements() {
+    console.log('refreshAnnouncements 被呼叫了');
     if (!currentCourseId) return;
     
     try {
         const response = await fetch(`/api/course/${currentCourseId}`);
         if (response.ok) {
-            const data = await response.json();
-            const announcements = data.announcements || [];
-            displayAnnouncements(announcements);
+            await loadCategorizedAnnouncements(currentCourseId);
         }
     } catch (error) {
         console.error('刷新公告失敗:', error);
