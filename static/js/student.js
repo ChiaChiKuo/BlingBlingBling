@@ -316,6 +316,60 @@ function doLogout() {
     window.location.href = '/logout';
 }
 
+// ========== 更新個人資料 ==========
+async function updateProfile() {
+    const nameInput = document.getElementById('profile-name');
+    const emailInput = document.getElementById('profile-email');
+
+    if (!nameInput || !emailInput) {
+        return;
+    }
+
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+
+    if (!name || !email) {
+        showToast('Name and email are required.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Save failed.');
+        }
+
+        updateProfileDisplay(data.name || name);
+        showToast('Changes saved.');
+    } catch (error) {
+        showToast(error.message || 'Save failed.');
+    }
+}
+
+function updateProfileDisplay(name) {
+    const avatarName = document.querySelector('.avatar-name');
+    if (avatarName) {
+        avatarName.textContent = `${name} ▾`;
+    }
+
+    const profileName = document.querySelector('.profile-name');
+    if (profileName) {
+        profileName.textContent = name;
+    }
+
+    const avatarCircle = document.querySelector('.avatar-circle');
+    if (avatarCircle) {
+        avatarCircle.textContent = name ? name[0] : 'U';
+    }
+}
+
 // ========== 顯示提示 ==========
 let toastTimer;
 function showToast(msg) {

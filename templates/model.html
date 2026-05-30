@@ -354,27 +354,27 @@
       <div class="page" id="page-settings">
         <div style="width:100%">
           <div class="page-header">
-            <h2>設定</h2>
-            <p>管理您的帳號與偏好設定</p>
+            <h2>Settings</h2>
+            <p>Manage your account and preferences</p>
           </div>
           <div class="settings-wrap">
 
             <div class="settings-section">
-              <h3>個人資料</h3>
+              <h3>Profile</h3>
               <div class="settings-row">
-                <div class="settings-label">姓名<small>顯示於課程與討論中</small></div>
-                <input class="settings-input" value="{{ user_name or '使用者' }}">
+                <div class="settings-label">Name<small>Shown in courses and discussions</small></div>
+                <input class="settings-input" id="profile-name" value="{{ user_name or 'User' }}">
               </div>
               <div class="settings-row">
-                <div class="settings-label">學號<small>您的學校識別碼</small></div>
+                <div class="settings-label">Student ID<small>Your university ID</small></div>
                 <input class="settings-input" value="{{ user_id or '' }}" readonly style="background:#f5f5f5">
               </div>
               <div class="settings-row">
-                <div class="settings-label">電子郵件<small>接收通知與公告</small></div>
-                <input class="settings-input" value="b134020005@mail.nsysu.edu.tw">
+                <div class="settings-label">Email<small>Used for notifications and announcements</small></div>
+                <input class="settings-input" id="profile-email" value="{{ user_email or '' }}">
               </div>
               <div style="margin-top:16px;text-align:right">
-                <button class="btn-save" onclick="showToast('設定已儲存！')">儲存變更</button>
+                <button class="btn-save" onclick="updateProfile()">Save Changes</button>
               </div>
             </div>
 

@@ -67,7 +67,7 @@ def login():
 @app.route("/student")
 def student_dashboard():
     if "user_id" not in session or session["role"] != "student":
-        return redirect(url_for('login_page'))
+        return redirect(url_for('login'))
     
     conn = get_db()
     cursor = conn.cursor()
@@ -91,12 +91,16 @@ def student_dashboard():
         ORDER BY n.due_date DESC, n.notification_id DESC
     """, (session["user_id"],))
     notifications = cursor.fetchall()
+    cursor.execute("SELECT email FROM Student WHERE student_id = ?", (session["user_id"],))
+    student_row = cursor.fetchone()
+    user_email = student_row["email"] if student_row else ""
     
     conn.close()
     
     return render_template('model.html', 
                          user_name=session["user_name"],
                          user_id=session["user_id"],
+                         user_email=user_email,
                          courses=courses,
                          notifications=notifications)
 
@@ -104,7 +108,7 @@ def student_dashboard():
 @app.route("/teacher")
 def teacher_dashboard():
     if "user_id" not in session or session["role"] != "teacher":
-        return redirect(url_for('login_page'))
+        return redirect(url_for('login'))
     
     conn = get_db()
     cursor = conn.cursor()
@@ -129,12 +133,17 @@ def teacher_dashboard():
         ORDER BY n.due_date DESC LIMIT 10
     """, (session["user_id"],))
     notifications = cursor.fetchall()
+
+    cursor.execute("SELECT email FROM Teacher WHERE teacher_id = ?", (session["user_id"],))
+    teacher_row = cursor.fetchone()
+    user_email = teacher_row["email"] if teacher_row else ""
     
     conn.close()
     
     return render_template('teacher.html',
                          user_name=session["user_name"],
                          user_id=session["user_id"],
+                         user_email=user_email,
                          courses=courses,
                          notifications=notifications)
 
@@ -203,6 +212,51 @@ def events():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+# API: 更新使用者個人資料
+@app.route("/api/profile", methods=["PUT"])
+def update_profile():
+    if "user_id" not in session or "role" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip()
+
+    if not name or not email:
+        return jsonify({"error": "Name and email are required"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    if session["role"] == "student":
+        cursor.execute(
+            "UPDATE Student SET student_name = ?, email = ? WHERE student_id = ?",
+            (name, email, session["user_id"])
+        )
+    elif session["role"] == "teacher":
+        cursor.execute(
+            "UPDATE Teacher SET teacher_name = ?, email = ? WHERE teacher_id = ?",
+            (name, email, session["user_id"])
+        )
+    else:
+        conn.close()
+        return jsonify({"error": "Invalid role"}), 403
+
+    if cursor.rowcount == 0:
+        conn.close()
+        return jsonify({"error": "User not found"}), 404
+
+    conn.commit()
+    conn.close()
+
+    session["user_name"] = name
+
+    return jsonify({
+        "success": True,
+        "name": name,
+        "email": email
+    })
 
 # API: 取得當前使用者的課程（學生/教師）
 @app.route("/api/my_courses")
