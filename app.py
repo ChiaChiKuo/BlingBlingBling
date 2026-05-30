@@ -73,7 +73,14 @@ def student_dashboard():
     cursor = conn.cursor()
     
     # 獲取學生的課程
-    # 獲取學生的公告（只顯示最新的線上課程公告）
+    cursor.execute("""
+        SELECT c.* FROM Course c
+        JOIN Enrolls e ON c.course_id = e.course_id
+        WHERE e.student_id = ?
+    """, (session["user_id"],))
+    courses = cursor.fetchall()
+    
+    # ✅ 修改：顯示該學生所屬課程的所有公告（不限於特定課程）
     cursor.execute("""
         SELECT n.*, c.course_name 
         FROM Notification n
@@ -81,24 +88,17 @@ def student_dashboard():
         WHERE n.course_id IN (
             SELECT course_id FROM Enrolls WHERE student_id = ?
         )
-        AND (
-            n.type != '線上課程' 
-            OR n.notification_id = (
-                SELECT notification_id FROM Notification 
-                WHERE course_id = n.course_id AND type = '線上課程'
-                ORDER BY due_date DESC LIMIT 1
-            )
-        )
-        ORDER BY n.due_date DESC LIMIT 10
+        ORDER BY n.due_date DESC, n.notification_id DESC
     """, (session["user_id"],))
-    courses = cursor.fetchall()
+    notifications = cursor.fetchall()
     
     conn.close()
     
     return render_template('model.html', 
                          user_name=session["user_name"],
                          user_id=session["user_id"],
-                         courses=courses)
+                         courses=courses,
+                         notifications=notifications)
 
 # 教師儀表板
 @app.route("/teacher")
@@ -428,14 +428,15 @@ def get_course_detail(course_id):
         conn.close()
         return jsonify({"error": "Course not found"}), 404
     
-    # 獲取課程公告
+    # 獲取課程公告（不要加 type 限制，先看看有沒有資料）
     cursor.execute("""
         SELECT notification_id, information, due_date, type
         FROM Notification
         WHERE course_id = ?
-        ORDER BY due_date DESC LIMIT 5
+        ORDER BY due_date DESC
     """, (course_id,))
     announcements = cursor.fetchall()
+    print(f"DEBUG: 找到 {len(announcements)} 筆公告")  # 加入除錯
     
     # 獲取課程單元
     cursor.execute("""
@@ -576,13 +577,7 @@ def create_live_room():
     room_name = str(uuid.uuid4())[:8]
     room_url = f"{SCREEGO_URL}/?room={room_name}"
     
-    # ✅ 檢查是否已有進行中的直播公告
-    cursor.execute("""
-        SELECT notification_id FROM Notification 
-        WHERE course_id = ? AND type = '線上課程' AND due_date > date('now')
-    """, (course_id,))
-    existing = cursor.fetchone()
-    
+    # ✅ 每次發起都新增一筆公告（不刪除舊的）
     notification_id = str(uuid.uuid4())[:8]
     information = f"""【線上課程】老師已發起線上直播課程！
 
@@ -592,21 +587,10 @@ def create_live_room():
 
 （此連結在本次課程結束後失效）"""
     
-    if existing:
-        # 更新現有的公告（保留開課紀錄，只更新連結和日期）
-        cursor.execute("""
-            UPDATE Notification 
-            SET information = ?, due_date = date('now', '+7 days')
-            WHERE course_id = ? AND type = '線上課程' AND due_date > date('now')
-        """, (information, course_id))
-        print(f"已更新課程 {course_id} 的直播公告")
-    else:
-        # 新增新的公告
-        cursor.execute("""
-            INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)
-            VALUES (?, ?, ?, ?, ?, date('now', '+7 days'))
-        """, (session["user_id"], notification_id, course_id, "線上課程", information))
-        print(f"已新增課程 {course_id} 的直播公告")
+    cursor.execute("""
+        INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)
+        VALUES (?, ?, ?, ?, ?, date('now', '+7 days'))
+    """, (session["user_id"], notification_id, course_id, "公告", information))
     
     conn.commit()
     conn.close()
@@ -617,6 +601,32 @@ def create_live_room():
         "course_id": course_id,
         "message": "房間已建立！公告已自動發布到學生公告區"
     })
+
+@app.route("/api/all_announcements")
+def get_all_announcements():
+    """取得學生所有課程的公告（側邊欄公告頁面用）"""
+    if "user_id" not in session or session["role"] != "student":
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT n.*, c.course_name 
+        FROM Notification n
+        JOIN Course c ON n.course_id = c.course_id
+        WHERE n.course_id IN (
+            SELECT course_id FROM Enrolls WHERE student_id = ?
+        )
+        ORDER BY n.rowid DESC
+    """, (session["user_id"],))
+    
+    announcements = cursor.fetchall()
+    conn.close()
+    
+    return jsonify({"announcements": [dict(a) for a in announcements]})
+
+
 
 
 if __name__ == "__main__":

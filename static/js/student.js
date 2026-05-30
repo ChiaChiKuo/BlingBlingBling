@@ -4,11 +4,13 @@ function initializeApp() {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
         
-        // 如果當前顯示的是課程頁面，載入課程
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'page-courses') {
                 loadCourses();
+            }
+            if (activePage && activePage.id === 'page-announcements') {
+                loadAllAnnouncements();
             }
         }, 100);
     } else {
@@ -28,11 +30,13 @@ function doLogin() {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
         
-        // 登入後如果當前是課程頁面，載入課程
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'page-courses') {
                 loadCourses();
+            }
+            if (activePage && activePage.id === 'page-announcements') {
+                loadAllAnnouncements();
             }
         }, 100);
     } else {
@@ -40,98 +44,126 @@ function doLogin() {
     }
 }
 
-// ========== 載入課程（呼叫後端 API）==========
+// ========== 載入課程 ==========
 async function loadCourses() {
     const container = document.getElementById('courses-container');
     const countElem = document.getElementById('course-count');
     
-    if (!container) {
-        console.log('找不到課程容器');
-        return;
-    }
+    if (!container) return;
     
-    // 顯示載入中
-    container.innerHTML = `
-        <div class="loading-state">
-            <div class="loading-spinner"></div>
-            <p>載入課程中...</p>
-        </div>
-    `;
+    container.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><p>載入課程中...</p></div>`;
     
     try {
-        // 呼叫後端 API
         const response = await fetch('/api/my_courses');
-        
-        if (!response.ok) {
-            throw new Error('載入課程失敗');
-        }
+        if (!response.ok) throw new Error('載入課程失敗');
         
         const data = await response.json();
         const courses = data.courses || [];
         
-        // 更新課程數量
-        if (countElem) {
-            countElem.textContent = `共 ${courses.length} 門課程`;
-        }
-        
-        // 顯示課程
+        if (countElem) countElem.textContent = `共 ${courses.length} 門課程`;
         displayCourses(courses);
-        
     } catch (error) {
         console.error('載入錯誤：', error);
-        container.innerHTML = `
-            <div class="error-state">
-                <span class="error-icon">⚠️</span>
-                <p>${error.message}</p>
-                <button class="retry-btn" onclick="loadCourses()">重新載入</button>
-            </div>
-        `;
+        container.innerHTML = `<div class="error-state"><span>⚠️</span><p>${error.message}</p><button onclick="loadCourses()">重新載入</button></div>`;
         if (countElem) countElem.textContent = '載入失敗';
     }
 }
 
-// ========== 顯示課程卡片 ==========
 function displayCourses(courses) {
     const container = document.getElementById('courses-container');
-    
     if (!container) return;
     
     if (courses.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">📚</span>
-                <p>您目前沒有選修任何課程</p>
-                <button class="browse-btn" onclick="goPage('home')">瀏覽課程</button>
-            </div>
-        `;
+        container.innerHTML = `<div class="empty-state"><span>📚</span><p>您目前沒有選修任何課程</p><button onclick="goPage('home')">瀏覽課程</button></div>`;
         return;
     }
     
     container.innerHTML = '';
-    
-    // 課程顏色
     const colors = ['#e0f7fa', '#fff8e1', '#f3e5f5', '#e8f5e9', '#fce4ec', '#ede7f6'];
     
     courses.forEach((course, index) => {
         const card = document.createElement('div');
         card.className = 'course-card';
         card.onclick = () => viewCourseDetail(course.course_id);
-        
         card.innerHTML = `
-            <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">
-                📚
-            </div>
+            <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">📚</div>
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
                 <div class="course-dept">課程代碼：${escapeHtml(course.course_id)}</div>
-                <div class="course-stats">
-                    <span>📖 ${course.credits || 3} 學分</span>
-                    <span>📅 ${course.semester || '進行中'}</span>
-                </div>
+                <div class="course-stats"><span>📖 ${course.credits || 3} 學分</span><span>📅 ${course.semester || '進行中'}</span></div>
             </div>
         `;
         container.appendChild(card);
     });
+}
+
+// ========== 側邊欄公告頁面 - 載入所有課程的公告 ==========
+async function loadAllAnnouncements() {
+    const container = document.getElementById('announcements-list-general');
+    const countElem = document.getElementById('announcement-count');
+    
+    if (!container) {
+        console.log('找不到公告容器');
+        return;
+    }
+    
+    container.innerHTML = '<div class="loading-state">載入公告中...</div>';
+    
+    try {
+        const response = await fetch('/api/all_announcements');
+        
+        if (!response.ok) {
+            throw new Error('載入公告失敗');
+        }
+        
+        const data = await response.json();
+        let announcements = data.announcements || [];
+        
+        // 依照日期排序，最新的在前
+        announcements.sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
+        
+        if (countElem) {
+            countElem.textContent = `共 ${announcements.length} 則公告`;
+        }
+        
+        if (announcements.length === 0) {
+            container.innerHTML = '<p style="color: #999; text-align: center;">暫無公告</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        for (const n of announcements) {
+            const title = n.information ? n.information.split('\n')[0] : '公告';
+            let content = n.information ? n.information.split('\n\n').slice(1).join('\n\n') : '';
+            
+            // 檢查是否包含 Screego 直播連結
+            const screegoMatch = content.match(/(https?:\/\/app\.screego\.net\/\?room=[a-zA-Z0-9]+)/);
+            let displayContent = escapeHtml(content);
+            if (screegoMatch) {
+                displayContent = displayContent.replace(
+                    screegoMatch[0],
+                    `<a href="${screegoMatch[0]}" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>`
+                );
+            }
+            
+            container.innerHTML += `
+                <div class="announce-item">
+                    <div class="announce-dot"></div>
+                    <div class="announce-content">
+                        <div class="announce-course">${escapeHtml(n.course_name)}</div>
+                        <div class="announce-title">${escapeHtml(title)}</div>
+                        <div class="announce-desc">${displayContent}</div>
+                        <div class="announce-date">${n.due_date || '日期未定'}</div>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('載入公告錯誤:', error);
+        container.innerHTML = `<div class="error-state">載入失敗：${error.message}</div>`;
+        if (countElem) countElem.textContent = '載入失敗';
+    }
 }
 
 // ========== 頁面切換 ==========
@@ -139,17 +171,14 @@ const pages = ['home', 'courses', 'announcements', 'settings', 'course-detail'];
 let currentAnnouncementType = '';
 
 function goPage(name) {
-    // 隱藏所有頁面
     pages.forEach(p => {
         const pg = document.getElementById('page-' + p);
         if (pg) pg.classList.remove('active');
     });
     
-    // 顯示目標頁面
     const targetPage = document.getElementById('page-' + name);
     if (targetPage) targetPage.classList.add('active');
     
-    // 更新側邊欄選中狀態（課程詳情頁不影響側邊欄）
     const navItems = ['home', 'courses', 'announcements', 'settings'];
     navItems.forEach(p => {
         const nav = document.getElementById('nav-' + p);
@@ -161,11 +190,12 @@ function goPage(name) {
         if (activeNav) activeNav.classList.add('active');
     }
     
-    // 如果切換到課程頁面，載入課程
     if (name === 'courses') {
-        setTimeout(() => {
-            loadCourses();
-        }, 50);
+        setTimeout(() => loadCourses(), 50);
+    }
+    
+    if (name === 'announcements') {
+        setTimeout(() => loadAllAnnouncements(), 50);
     }
 
     if (name === 'announcements') {
@@ -296,7 +326,6 @@ function showToast(msg) {
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ========== 防 XSS ==========
 function escapeHtml(str) {
     if (!str) return '';
     const div = document.createElement('div');
@@ -304,7 +333,7 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// ========== 監聽 Enter 鍵 ==========
+// 監聽 Enter 鍵
 document.getElementById('login-pass').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
 });
@@ -313,53 +342,34 @@ document.getElementById('login-user').addEventListener('keydown', e => {
 });
 
 // ========== 課程詳情功能 ==========
-
-// 當前查看的課程 ID
 let currentCourseId = null;
 
-// 查看課程詳情
 async function viewCourseDetail(courseId) {
     currentCourseId = courseId;
     
-    // 切換到課程詳情頁面
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const detailPage = document.getElementById('page-course-detail');
     if (detailPage) detailPage.classList.add('active');
     
-    // 顯示載入狀態
     document.getElementById('course-detail-title').textContent = '載入中...';
     document.getElementById('course-detail-info').textContent = '讀取課程資料中';
     
     try {
-        // 獲取課程詳細資料
         const response = await fetch(`/api/course/${courseId}`);
-        
-        if (!response.ok) {
-            throw new Error('載入課程失敗');
-        }
-        
+        if (!response.ok) throw new Error('載入課程失敗');
         const data = await response.json();
         displayCourseDetail(data);
-        
     } catch (error) {
         console.error('載入課程詳情錯誤:', error);
-        document.getElementById('course-description').innerHTML = `
-            <div class="error-state">
-                <span class="error-icon">⚠️</span>
-                <p>載入失敗：${error.message}</p>
-                <button class="retry-btn" onclick="viewCourseDetail('${courseId}')">重新載入</button>
-            </div>
-        `;
+        document.getElementById('course-description').innerHTML = `<div class="error-state">載入失敗：${error.message}<button onclick="viewCourseDetail('${courseId}')">重新載入</button></div>`;
     }
 }
 
-// 顯示課程詳情
 function displayCourseDetail(data) {
     const course = data.course;
     const announcements = data.announcements || [];
     const modules = data.modules || [];
     
-    // 課程基本資訊
     document.getElementById('course-detail-title').textContent = course.course_name;
     document.getElementById('course-detail-info').textContent = `課程代碼：${course.course_id}`;
     document.getElementById('course-description').textContent = course.description || '暫無課程簡介';
@@ -368,19 +378,17 @@ function displayCourseDetail(data) {
     document.getElementById('course-semester').textContent = course.semester || '114_2';
     document.getElementById('course-mode').textContent = course.is_online ? '線上課程' : '實體課程';
     
-    // 顯示公告
     displayAnnouncementsByType(announcements);
-    
-    // 顯示單元
     displayModules(modules);
 }
 
-// 依照類型顯示公告（分類到不同的分頁）
 function displayAnnouncementsByType(announcements) {
-    // 定義各類型的容器 ID 對應
+    const sortedAnnouncements = [...announcements].sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
+    
     const typeMapping = {
         '公告': 'announcements-list-general',
         '一般公告': 'announcements-list-general',
+        '線上課程': 'announcements-list-general',
         '作業通知': 'announcements-list-homework',
         '考試通知': 'announcements-list-exam',
         '課程異動通知': 'announcements-list-courseChange',
@@ -388,250 +396,159 @@ function displayAnnouncementsByType(announcements) {
         '成績公告': 'announcements-list-grade'
     };
     
-    // 初始化所有容器為「暫無公告」
     for (const containerId of Object.values(typeMapping)) {
         const container = document.getElementById(containerId);
-        if (container) {
-            container.innerHTML = '<p style="color: #999;">暫無此類型公告</p>';
-        }
+        if (container) container.innerHTML = '<p style="color: #999;">暫無此類型公告</p>';
     }
     
-    if (!announcements || announcements.length === 0) {
-        return;
-    }
+    if (!sortedAnnouncements || sortedAnnouncements.length === 0) return;
     
-    // 將公告分類
-    for (const announcement of announcements) {
+    for (const announcement of sortedAnnouncements) {
         let type = announcement.type || '公告';
+        let containerId = typeMapping[type];
         
-        // 處理可能的類型名稱差異
-        if (type === '公告') type = '公告';
-        if (type === '一般公告') type = '公告';
-        
-        const containerId = typeMapping[type];
-        
-        if (containerId) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                // 如果當前容器顯示的是「暫無公告」，清空它
-                if (container.innerHTML.includes('暫無此類型公告')) {
-                    container.innerHTML = '';
-                }
-                
-                // 新增公告卡片
-                const parsed = parseAnnouncementDisplay(announcement);
-                const announcementHtml = `
-                    <div class="announce-item">
-                        <div class="announce-dot"></div>
-                        <div class="announce-content">
-                            <div class="announce-title">${escapeHtml(parsed.title)}</div>
-                            <div class="announce-desc">${escapeHtml(parsed.content)}</div>
-                            <div class="announce-date">${announcement.due_date || '日期未定'}</div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += announcementHtml;
-            }
+        if (!containerId && announcement.information && announcement.information.includes('screego')) {
+            containerId = 'announcements-list-general';
         }
+        if (!containerId) continue;
+        
+        const container = document.getElementById(containerId);
+        if (!container) continue;
+        
+        if (container.innerHTML.includes('暫無此類型公告')) container.innerHTML = '';
+        
+        const info = announcement.information || '';
+        const lines = info.split('\n\n');
+        const title = lines[0] || '公告';
+        let content = lines.slice(1).join('\n\n') || '';
+        
+        const screegoMatch = content.match(/(https?:\/\/app\.screego\.net\/\?room=[a-zA-Z0-9]+)/);
+        let displayContent = escapeHtml(content);
+        if (screegoMatch) {
+            displayContent = displayContent.replace(screegoMatch[0], `<a href="${screegoMatch[0]}" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>`);
+        }
+        
+        container.innerHTML += `
+            <div class="announce-item">
+                <div class="announce-dot"></div>
+                <div class="announce-content">
+                    <div class="announce-title">${escapeHtml(title)}</div>
+                    <div class="announce-desc">${displayContent}</div>
+                    <div class="announce-date">${announcement.due_date || '日期未定'}</div>
+                </div>
+            </div>
+        `;
     }
 }
 
-// 顯示單元列表
 function displayModules(modules) {
     const container = document.getElementById('modules-list');
+    if (!container) return;
     
     if (!modules || modules.length === 0) {
         container.innerHTML = '<p style="color: #999;">暫無課程單元</p>';
         return;
     }
     
-    container.innerHTML = modules.map(m => `
-        <div class="module-item">
-            <div class="module-title">📖 ${escapeHtml(m.title || '未命名單元')}</div>
-            <div class="module-desc">${escapeHtml(m.description || '暫無說明')}</div>
-        </div>
-    `).join('');
+    container.innerHTML = modules.map(m => `<div class="module-item"><div class="module-title">📖 ${escapeHtml(m.title || '未命名單元')}</div><div class="module-desc">${escapeHtml(m.description || '暫無說明')}</div></div>`).join('');
 }
 
-// 切換課程標籤頁
 function switchCourseTab(tabName, event) {
-    // 更新標籤樣式
     const tabs = document.querySelectorAll('.course-tab');
-    tabs.forEach(tab => {
-        tab.classList.remove('active');
-    });
-    if (event && event.target) {
-        event.target.classList.add('active');
-    }
+    tabs.forEach(tab => tab.classList.remove('active'));
+    if (event && event.target) event.target.classList.add('active');
     
-    // 隱藏所有內容區塊
-    const allContents = [
-        'course-overview',
-        'course-modules',
-        'course-announcements',
-        'course-homework',
-        'course-exam',
-        'course-courseChange',
-        'course-discussion',
-        'course-grade'
-    ];
+    const allContents = ['course-overview', 'course-modules', 'course-announcements', 'course-homework', 'course-exam', 'course-courseChange', 'course-discussion', 'course-grade'];
+    allContents.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     
-    allContents.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-    
-    // 根據 tabName 顯示對應區塊
     switch(tabName) {
-        case 'overview':
-            document.getElementById('course-overview').style.display = 'block';
-            break;
-        case 'modules':
-            document.getElementById('course-modules').style.display = 'block';
-            break;
-        case 'announcements':
-            document.getElementById('course-announcements').style.display = 'block';
-            break;
-        case 'homework':
-            document.getElementById('course-homework').style.display = 'block';
-            break;
-        case 'exam':
-            document.getElementById('course-exam').style.display = 'block';
-            break;
-        case 'courseChange':
-            document.getElementById('course-courseChange').style.display = 'block';
-            break;
-        case 'discussion':
-            document.getElementById('course-discussion').style.display = 'block';
-            break;
-        case 'grade':
-            document.getElementById('course-grade').style.display = 'block';
-            break;
-        default:
-            document.getElementById('course-overview').style.display = 'block';
+        case 'overview': document.getElementById('course-overview').style.display = 'block'; break;
+        case 'modules': document.getElementById('course-modules').style.display = 'block'; break;
+        case 'announcements': document.getElementById('course-announcements').style.display = 'block'; break;
+        case 'homework': document.getElementById('course-homework').style.display = 'block'; break;
+        case 'exam': document.getElementById('course-exam').style.display = 'block'; break;
+        case 'courseChange': document.getElementById('course-courseChange').style.display = 'block'; break;
+        case 'discussion': document.getElementById('course-discussion').style.display = 'block'; break;
+        case 'grade': document.getElementById('course-grade').style.display = 'block'; break;
+        default: document.getElementById('course-overview').style.display = 'block';
     }
 }
 
-
-
-//通知按鈕狀態變化
-// ── 通知設定 ──
+// 通知設定
 function toggleAllNotifications(el) {
-  el.classList.toggle('on');
-  const isOn = el.classList.contains('on');
-
-
-  // 儲存「全部通知」本身的設定到後端
-  fetch('/api/notification_setting', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: '全部通知', notification_switch: isOn })
-  }).catch(err => console.error('儲存失敗', err));
-
-
-  // 根據全部通知的狀態，強制同步所有個別開關
-  document.querySelectorAll('.notification-toggle').forEach(toggle => {
-    if (isOn) {
-      toggle.classList.add('on');
-    } else {
-      toggle.classList.remove('on');
-    }
-    const label = toggle.closest('.settings-row')
-                       .querySelector('.settings-label')
-                       .childNodes[0].textContent.trim();
+    el.classList.toggle('on');
+    const isOn = el.classList.contains('on');
+    
     fetch('/api/notification_setting', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: label, notification_switch: isOn })
-    }).catch(err => console.error('儲存失敗', err));
-  });
-}
-
-
-function syncAllToggle() {
-  const allToggles = document.querySelectorAll('.notification-toggle');
- 
-  // 只要「有任何一個」是 on，全部通知就應該是 true (維持開啟)
-  const hasAnyOn = Array.from(allToggles).some(t => t.classList.contains('on'));
- 
-  const allToggleBtn = document.querySelector('[onclick="toggleAllNotifications(this)"]');
-  if (allToggleBtn) {
-    const wasOn = allToggleBtn.classList.contains('on');
-    const shouldBeOn = hasAnyOn;
-
-
-    // 檢查狀態是否真的有翻轉，避免沒必要的重複更新
-    if (wasOn !== shouldBeOn) {
-      if (shouldBeOn) {
-        allToggleBtn.classList.add('on');
-      } else {
-        allToggleBtn.classList.remove('on');
-      }
-
-
-      // 當全部通知的狀態被連動改變時，立刻同步寫入資料庫(DB)
-      fetch('/api/notification_setting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: '全部通知', notification_switch: shouldBeOn })
-      })
-      .catch(err => console.error('同步更新全部通知資料庫失敗', err));
-    }
-  }
-}
-
-
-// 設定頁面顯示時載入通知設定
-function initNotificationSettings() {
-  fetch('/api/notification_setting')
-    .then(res => res.json())
-    .then(data => {
-      data.settings.forEach(setting => {
-        document.querySelectorAll('.notification-toggle').forEach(toggle => {
-          const label = toggle.closest('.settings-row')
-                             .querySelector('.settings-label')
-                             .childNodes[0].textContent.trim();
-          if (label === setting.type) {
-            if (setting.notification_switch) {
-              toggle.classList.add('on');
-            } else {
-              toggle.classList.remove('on');
-            }
-          }
-        });
-      });
-
-
-      syncAllToggle();
-
-
-      document.querySelectorAll('.notification-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function () {
-            toggle.classList.toggle('on');  
-            const label = toggle.closest('.settings-row')
-                                .querySelector('.settings-label')
-                                .childNodes[0].textContent.trim();
-            const isOn = toggle.classList.contains('on');
-          fetch('/api/notification_setting', {
+        body: JSON.stringify({ type: '全部通知', notification_switch: isOn })
+    }).catch(err => console.error('儲存失敗', err));
+    
+    document.querySelectorAll('.notification-toggle').forEach(toggle => {
+        if (isOn) toggle.classList.add('on');
+        else toggle.classList.remove('on');
+        const label = toggle.closest('.settings-row').querySelector('.settings-label').childNodes[0].textContent.trim();
+        fetch('/api/notification_setting', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ type: label, notification_switch: isOn })
-          })
-            .then(() => syncAllToggle())
-            .catch(err => console.error('儲存失敗', err));
-        });
-      });
-    })
-    .catch(err => console.error('載入通知設定失敗', err));
+        }).catch(err => console.error('儲存失敗', err));
+    });
 }
 
+function syncAllToggle() {
+    const allToggles = document.querySelectorAll('.notification-toggle');
+    const hasAnyOn = Array.from(allToggles).some(t => t.classList.contains('on'));
+    const allToggleBtn = document.querySelector('[onclick="toggleAllNotifications(this)"]');
+    if (allToggleBtn) {
+        const wasOn = allToggleBtn.classList.contains('on');
+        const shouldBeOn = hasAnyOn;
+        if (wasOn !== shouldBeOn) {
+            if (shouldBeOn) allToggleBtn.classList.add('on');
+            else allToggleBtn.classList.remove('on');
+            fetch('/api/notification_setting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: '全部通知', notification_switch: shouldBeOn })
+            }).catch(err => console.error('同步更新全部通知資料庫失敗', err));
+        }
+    }
+}
 
-// 在原本的 goPage 裡加入設定頁初始化，不覆蓋整個函式
+function initNotificationSettings() {
+    fetch('/api/notification_setting')
+        .then(res => res.json())
+        .then(data => {
+            data.settings.forEach(setting => {
+                document.querySelectorAll('.notification-toggle').forEach(toggle => {
+                    const label = toggle.closest('.settings-row').querySelector('.settings-label').childNodes[0].textContent.trim();
+                    if (label === setting.type) {
+                        if (setting.notification_switch) toggle.classList.add('on');
+                        else toggle.classList.remove('on');
+                    }
+                });
+            });
+            syncAllToggle();
+            document.querySelectorAll('.notification-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    toggle.classList.toggle('on');
+                    const label = toggle.closest('.settings-row').querySelector('.settings-label').childNodes[0].textContent.trim();
+                    const isOn = toggle.classList.contains('on');
+                    fetch('/api/notification_setting', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: label, notification_switch: isOn })
+                    }).then(() => syncAllToggle()).catch(err => console.error('儲存失敗', err));
+                });
+            });
+        }).catch(err => console.error('載入通知設定失敗', err));
+}
+
 const _origGoPage = goPage;
 goPage = function(page) {
-  _origGoPage(page);
-  if (page === 'settings') {
-    setTimeout(initNotificationSettings, 100);
-  }
+    _origGoPage(page);
+    if (page === 'settings') {
+        setTimeout(initNotificationSettings, 100);
+    }
 };
-
