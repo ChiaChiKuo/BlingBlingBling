@@ -141,10 +141,10 @@
       <!-- 👆 加入結束 👆 -->
       <div class="sidebar-section-title">📊 評量與成績</div>
 
-      <div class="sidebar-item" onclick="showToast('成績管理開啟中...')">
+      <div class="sidebar-item" id="nav-grade-management" onclick="goTeacherAnnouncementType('grade-management', '成績公告', '成績管理')">
         <span class="si-icon">📝</span> 成績管理
       </div>
-      <div class="sidebar-item" onclick="showToast('作業管理開啟中...')">
+      <div class="sidebar-item" id="nav-homework-management" onclick="goTeacherAnnouncementType('homework-management', '作業通知', '作業管理')">
         <span class="si-icon">📋</span> 作業管理
       </div>
       <div class="sidebar-item" onclick="showToast('互動教材開啟中...')">
@@ -329,7 +329,7 @@
             </select>
             <!-- 公告類型下拉選單 -->
             <select id="announce_type" class="settings-input" style="width:100%; margin-bottom: 16px;">
-              <option value="公告">📢 一般公告</option>
+              <option value="一般公告">📢 一般公告</option>
               <option value="作業通知">📝 作業通知</option>
               <option value="考試通知">📋 考試通知</option>
               <option value="課程異動通知">🔄 課程異動通知</option>
@@ -380,6 +380,36 @@
           </div>
         </div>
       </div>
+
+<!-- GRADE MANAGEMENT -->
+<div class="page" id="page-grade-management">
+  <div style="width:100%">
+    <div class="page-header">
+      <h2>成績管理</h2>
+      <p id="grade-management-summary">已發布0則成績公告</p>
+    </div>
+    <div class="settings-wrap">
+      <div class="settings-section">
+        <div id="grade-management-list" class="announce-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOMEWORK MANAGEMENT -->
+<div class="page" id="page-homework-management">
+  <div style="width:100%">
+    <div class="page-header">
+      <h2>作業管理</h2>
+      <p id="homework-management-summary">已發布0則作業通知</p>
+    </div>
+    <div class="settings-wrap">
+      <div class="settings-section">
+        <div id="homework-management-list" class="announce-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- STUDENTS MANAGEMENT -->
 <div class="page" id="page-students">
@@ -586,7 +616,7 @@
               <div style="margin-bottom: 16px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 500;">公告類型</label>
                 <select id="publish-type" class="settings-input" style="width: 100%;">
-                  <option value="公告">📢 一般公告</option>
+                  <option value="一般公告">📢 一般公告</option>
                   <option value="作業通知">📝 作業通知</option>
                   <option value="考試通知">📋 考試通知</option>
                   <option value="課程異動通知">🔄 課程異動通知</option>
@@ -624,7 +654,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const isLoggedIn = {{ 'true' if user_name else 'false' }};
+  const isLoggedIn = "{{ 'true' if user_name else 'false' }}" === "true";
 </script>
 <script src="{{ url_for('static', filename='js/teacher.js') }}"></script>
 </body>

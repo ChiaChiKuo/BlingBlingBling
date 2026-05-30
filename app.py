@@ -236,6 +236,70 @@ def get_my_courses():
 
     return jsonify({"courses": [dict(course) for course in courses]})
 
+# API: 取得學生修課的所有公告
+@app.route("/api/announcements")
+def get_announcements():
+    if "user_id" not in session or session["role"] != "student":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    requested_type = request.args.get("type", "").strip()
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    params = [session["user_id"]]
+    type_filter = ""
+    if requested_type:
+        type_filter = "AND n.type = ?"
+        params.append(requested_type)
+
+    cursor.execute(f"""
+        SELECT n.notification_id, n.course_id, n.type, n.information, n.due_date,
+               c.course_name
+        FROM Notification n
+        JOIN Course c ON n.course_id = c.course_id
+        WHERE n.course_id IN (
+            SELECT course_id FROM Enrolls WHERE student_id = ?
+        )
+        {type_filter}
+        ORDER BY n.due_date DESC
+    """, params)
+    announcements = cursor.fetchall()
+    conn.close()
+
+    return jsonify({"announcements": [dict(a) for a in announcements]})
+
+# API: 取得老師自己發布過的公告，再用 type 篩選
+@app.route("/api/teacher/announcements")
+def get_teacher_announcements():
+    if "user_id" not in session or session["role"] != "teacher":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    requested_type = request.args.get("type", "").strip()
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    params = [session["user_id"]]
+    type_filter = ""
+    if requested_type:
+        type_filter = "AND n.type = ?"
+        params.append(requested_type)
+
+    cursor.execute(f"""
+        SELECT n.notification_id, n.course_id, n.type, n.information, n.due_date,
+               c.course_name
+        FROM Notification n
+        JOIN Course c ON n.course_id = c.course_id
+        WHERE n.teacher_id = ?
+        {type_filter}
+        ORDER BY n.due_date DESC
+    """, params)
+    announcements = cursor.fetchall()
+    conn.close()
+
+    return jsonify({"announcements": [dict(a) for a in announcements]})
+
 # API: 獲取課程學生列表（教師用）
 @app.route("/api/course/<course_id>/students")
 def get_course_students(course_id):
@@ -267,7 +331,7 @@ def create_announcement():
     
     import uuid
     notification_id = str(uuid.uuid4())[:8]
-    announcement_type = data.get("type", "公告")
+    announcement_type = data.get("type", "一般公告")
     
     cursor.execute("""
         INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)

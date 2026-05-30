@@ -437,6 +437,50 @@
 
   .sidebar-item .si-icon { font-size: 15px; width: 18px; text-align: center; }
 
+  .sidebar-arrow {
+    margin-left: auto;
+    font-size: 12px;
+    color: #999;
+    transition: transform .15s, color .15s;
+  }
+
+  .sidebar-item.active .sidebar-arrow {
+    color: var(--teal-dark);
+  }
+
+  .sidebar-arrow.open {
+    transform: rotate(180deg);
+  }
+
+  .sidebar-submenu {
+    display: none;
+    margin: -2px 0 6px;
+  }
+
+  .sidebar-submenu.open {
+    display: block;
+  }
+
+  .sidebar-subitem {
+    padding: 8px 18px 8px 49px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background .15s, color .15s;
+  }
+
+  .sidebar-subitem:hover,
+  .sidebar-subitem.active {
+    background: var(--teal-light);
+    color: var(--teal-dark);
+  }
+
+  .sidebar-subitem.active {
+    border-left-color: var(--teal);
+    font-weight: 600;
+  }
+
   /* MAIN CONTENT */
   .main-content {
     margin-left: var(--sidebar-w);
