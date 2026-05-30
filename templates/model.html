@@ -301,60 +301,42 @@
         <div style="width:100%">
           <div class="page-header">
             <h2>公告</h2>
-            <p>共 5 則公告，3 則未讀</p>
+            <p id="announcement-count">載入中...</p>
           </div>
-          <div class="announce-list">
-
-            <div class="announce-item">
-              <div class="announce-dot"></div>
-              <div class="announce-content">
-                <div class="announce-course">資料視覺化-CSS137</div>
-                <div class="announce-title">期末分組報告名單</div>
-                <div class="announce-desc">期末分組報告名單已經更新報告順序。另外如果有還未在分組名單上的同學，請私訊助教做更正...</div>
-                <div class="announce-date">2026.05.15 13:40</div>
+          <div class="announce-list" id="announcements-list-general">
+            {% if notifications and notifications|length > 0 %}
+              {% for n in notifications %}
+              <div class="announce-item">
+                <div class="announce-dot"></div>
+                <div class="announce-content">
+                  <div class="announce-course">{{ n.course_name }}</div>
+                  <div class="announce-title">{{ n.information.split('\n')[0] if n.information else '公告' }}</div>
+                  <div class="announce-desc">
+                    {% if n.information and 'screego' in n.information %}
+                      {% set content = n.information.split('\n\n')[1:] | join('\n\n') %}
+                      {% if 'https://app.screego.net/?room=' in content %}
+                        {% set parts = content.split('https://app.screego.net/?room=') %}
+                        {% set room_parts = parts[1].split(' ') %}
+                        {% set url = 'https://app.screego.net/?room=' + room_parts[0] %}
+                        {{ parts[0]|safe }}
+                        <a href="{{ url }}" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>
+                        {{ (room_parts[1:] | join(' '))|safe }}
+                      {% else %}
+                        {{ content|safe }}
+                      {% endif %}
+                    {% else %}
+                      {{ n.information.split('\n\n')[1:] | join('\n\n') if n.information else '' }}
+                    {% endif %}
+                  </div>
+                  <div class="announce-date">{{ n.due_date or '日期未定' }}</div>
+                </div>
               </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot"></div>
-              <div class="announce-content">
-                <div class="announce-course">管理資訊系統-MIS304</div>
-                <div class="announce-title">5/14 課堂加分活動(5/16 23:59截止)</div>
-                <div class="announce-desc">請同學在截止日前於討論區回覆指定問題，完成後可獲得加分...</div>
-                <div class="announce-date">2026.05.14 10:00</div>
-              </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot"></div>
-              <div class="announce-content">
-                <div class="announce-course">資料庫管理-MIS205</div>
-                <div class="announce-title">第五章作業繳交說明</div>
-                <div class="announce-desc">請完成 Lab5 中所有 SQL 查詢題目，並上傳 .sql 檔案。截止日 5/17...</div>
-                <div class="announce-date">2026.05.13 09:00</div>
-              </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot read"></div>
-              <div class="announce-content">
-                <div class="announce-course">商事法-MIS206</div>
-                <div class="announce-title">期中考成績公告</div>
-                <div class="announce-desc">期中考成績已公告，如有疑問請於辦公時間前來詢問...</div>
-                <div class="announce-date">2026.05.10 16:00</div>
-              </div>
-            </div>
-
-            <div class="announce-item">
-              <div class="announce-dot read"></div>
-              <div class="announce-content">
-                <div class="announce-course">莎劇與文化詮釋</div>
-                <div class="announce-title">第八週課程調整通知</div>
-                <div class="announce-desc">因教師出差，第八週課程改為線上進行，請同學留意通知...</div>
-                <div class="announce-date">2026.05.08 11:30</div>
-              </div>
-            </div>
-
+              {% endfor %}
+              <script>document.getElementById('announcement-count').innerHTML = '共 {{ notifications|length }} 則公告';</script>
+            {% else %}
+              <p style="color: #999; text-align: center;">暫無公告</p>
+              <script>document.getElementById('announcement-count').innerHTML = '暫無公告';</script>
+            {% endif %}
           </div>
         </div>
       </div>

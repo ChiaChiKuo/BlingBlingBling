@@ -220,6 +220,16 @@ function displayCourseDetail(data) {
     document.getElementById('course-semester').textContent = course.semester || '114_2';
     document.getElementById('course-mode').textContent = course.is_online ? '線上課程' : '實體課程';
 
+    // 判斷是否為可直播的課程（資料庫管理、管理資訊系統、資料視覺化）
+    const onlineCourseNames = ['資料庫管理', '管理資訊系統', '資料視覺化'];
+    const canLive = onlineCourseNames.some(name => course.course_name.includes(name));
+    
+    // 顯示或隱藏課程名稱旁邊的按鈕
+    const liveBtn = document.getElementById('online-live-btn');
+    if (liveBtn) {
+        liveBtn.style.display = canLive ? 'inline-flex' : 'none';
+    }
+
     loadCategorizedAnnouncements(course.course_id);
 }
 
@@ -763,6 +773,41 @@ function confirmCreateRoom() {
         if (data.success) {
             window.open(data.room_url, '_blank');
             showToast('房間已建立！公告已發布，學生可從公告區加入');
+        } else {
+            showToast('建立失敗：' + (data.error || '未知錯誤'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('建立失敗，請稍後再試');
+    });
+}
+
+
+
+// 從課程詳情頁發起線上課程（不需要選擇課程，直接用 currentCourseId）
+function createLiveRoomFromCourse() {
+    if (!currentCourseId) {
+        showToast('無法取得課程資訊');
+        return;
+    }
+    
+    showToast('正在建立線上課程房間...');
+    
+    fetch('/api/create_live_room', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ course_id: currentCourseId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.open(data.room_url, '_blank');
+            showToast('房間已建立！公告已發布，學生可從公告區加入');
+            // 刷新公告列表，讓學生立即看到
+            setTimeout(() => refreshAnnouncements(), 1000);
         } else {
             showToast('建立失敗：' + (data.error || '未知錯誤'));
         }
