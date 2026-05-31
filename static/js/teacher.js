@@ -97,38 +97,23 @@ function displayCourses(courses) {
     const container = document.getElementById('courses-container');
     
     if (!container) return;
-    
     if (courses.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">📖</span>
-                <p>您目前沒有教授任何課程</p>
-                <button class="browse-btn" onclick="showToast('開課功能開發中')">開設新課程</button>
-            </div>
-        `;
+        container.innerHTML = `<div class="empty-state"><span>📚</span><p>您目前沒有教授任何課程</p></div>`;
         return;
     }
-    
+
     container.innerHTML = '';
-    
     const colors = ['#e0f7fa', '#fff8e1', '#f3e5f5', '#e8f5e9', '#fce4ec', '#ede7f6'];
-    
     courses.forEach((course, index) => {
         const card = document.createElement('div');
         card.className = 'course-card';
         card.onclick = () => viewCourseDetail(course.course_id);
-        
         card.innerHTML = `
-            <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">
-                📚
-            </div>
+            <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">📚</div>
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
                 <div class="course-dept">課程代碼：${escapeHtml(course.course_id)}</div>
-                <div class="course-stats">
-                    <span>📖 ${course.credits || 3} 學分</span>
-                    <span>👥 管理</span>
-                </div>
+                <div class="course-stats"><span>📖 ${course.credits || 3} 學分</span><span>👥 ${course.student_count || 0} 人</span></div>
             </div>
         `;
         container.appendChild(card);
@@ -295,7 +280,13 @@ async function loadCategorizedAnnouncements(courseId) {
     try {
         const response = await fetch(`/api/course/${courseId}`);
         const data = await response.json();
-        const announcements = data.announcements || [];
+        const announcements = (data.announcements || []).slice().sort((a,b) => {
+            const da = a.due_date ? new Date(a.due_date).getTime() : 0;
+            const db = b.due_date ? new Date(b.due_date).getTime() : 0;
+            if (db !== da) return db - da;
+            if (a.notification_id && b.notification_id) return b.notification_id.localeCompare(a.notification_id);
+            return 0;
+        });
         
         const categories = {
             general: [],
@@ -324,7 +315,7 @@ async function loadCategorizedAnnouncements(courseId) {
         });
         
         for (const [cat, list] of Object.entries(categories)) {
-            const container = document.getElementById(`announcements-list-${cat}`);
+            const container = document.getElementById(`course-announcements-list-${cat}`);
             if (!container) continue;
             
             if (list.length === 0) {

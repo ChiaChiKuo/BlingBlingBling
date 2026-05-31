@@ -321,20 +321,17 @@
                   <div class="announce-course">{{ n.course_name }}</div>
                   <div class="announce-title">{{ n.information.split('\n')[0] if n.information else '公告' }}</div>
                   <div class="announce-desc">
-                    {% if n.information and 'screego' in n.information %}
-                      {% set content = n.information.split('\n\n')[1:] | join('\n\n') %}
-                      {% if 'https://app.screego.net/?room=' in content %}
-                        {% set parts = content.split('https://app.screego.net/?room=') %}
-                        {% set room_parts = parts[1].split(' ') %}
-                        {% set url = 'https://app.screego.net/?room=' + room_parts[0] %}
-                        {{ parts[0]|safe }}
-                        <a href="{{ url }}" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>
-                        {{ (room_parts[1:] | join(' '))|safe }}
-                      {% else %}
-                        {{ content|safe }}
-                      {% endif %}
+                    {% set content = n.information.split('\n\n')[1:] | join('\n\n') if n.information else '' %}
+                    {% set room_url = None %}
+                    {% if 'https://app.screego.net/?room=' in content %}
+                      {% set after = content.split('https://app.screego.net/?room=')[1] %}
+                      {% set room_id = after.split()|first %}
+                      {% set room_url = 'https://app.screego.net/?room=' + room_id %}
+                    {% endif %}
+                    {% if room_url %}
+                      {{ content.replace(room_url, '<a href="' + room_url + '" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>')|safe }}
                     {% else %}
-                      {{ n.information.split('\n\n')[1:] | join('\n\n') if n.information else '' }}
+                      {{ content|safe }}
                     {% endif %}
                   </div>
                   <div class="announce-date">{{ n.due_date or '日期未定' }}</div>
@@ -497,7 +494,7 @@
           <div id="course-announcements" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>📢 一般公告</h3>
-              <div id="announcements-list-general" class="announce-list">
+              <div id="course-announcements-list-general" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>
@@ -507,7 +504,7 @@
           <div id="course-homework" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>📝 作業通知</h3>
-              <div id="announcements-list-homework" class="announce-list">
+              <div id="course-announcements-list-homework" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>
@@ -517,7 +514,7 @@
           <div id="course-exam" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>📋 考試通知</h3>
-              <div id="announcements-list-exam" class="announce-list">
+              <div id="course-announcements-list-exam" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>
@@ -527,7 +524,7 @@
           <div id="course-courseChange" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>🔄 課程異動通知</h3>
-              <div id="announcements-list-courseChange" class="announce-list">
+              <div id="course-announcements-list-courseChange" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>
@@ -537,7 +534,7 @@
           <div id="course-discussion" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>💬 討論區</h3>
-              <div id="announcements-list-discussion" class="announce-list">
+              <div id="course-announcements-list-discussion" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>
@@ -547,7 +544,7 @@
           <div id="course-grade" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>📊 成績公告</h3>
-              <div id="announcements-list-grade" class="announce-list">
+              <div id="course-announcements-list-grade" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>

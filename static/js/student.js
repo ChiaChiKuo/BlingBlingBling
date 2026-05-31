@@ -95,6 +95,7 @@ function displayCourses(courses) {
         `;
         container.appendChild(card);
     });
+
 }
 
 // ========== 側邊欄公告頁面 - 載入所有課程的公告 ==========
@@ -119,8 +120,8 @@ async function loadAllAnnouncements() {
         const data = await response.json();
         let announcements = data.announcements || [];
         
-        // 依照日期排序，最新的在前
-        announcements.sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
+        // 依照日期排序，最新的在前（若無日期則使用 comparator fallback）
+        announcements.sort(compareAnnouncementsDesc);
         
         if (countElem) {
             countElem.textContent = `共 ${announcements.length} 則公告`;
@@ -134,18 +135,9 @@ async function loadAllAnnouncements() {
         container.innerHTML = '';
         
         for (const n of announcements) {
-            const title = n.information ? n.information.split('\n')[0] : '公告';
-            let content = n.information ? n.information.split('\n\n').slice(1).join('\n\n') : '';
-            
-            // 檢查是否包含 Screego 直播連結
-            const screegoMatch = content.match(/(https?:\/\/app\.screego\.net\/\?room=[a-zA-Z0-9]+)/);
-            let displayContent = escapeHtml(content);
-            if (screegoMatch) {
-                displayContent = displayContent.replace(
-                    screegoMatch[0],
-                    `<a href="${screegoMatch[0]}" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>`
-                );
-            }
+            const parsed = parseAnnouncementDisplay(n);
+            const title = parsed.title;
+            const displayContent = formatAnnouncementContent(parsed.content);
             
             container.innerHTML += `
                 <div class="announce-item">
@@ -240,7 +232,7 @@ function updateAnnouncementSubnav(type) {
 }
 
 async function loadAnnouncements(type = '') {
-    const container = document.getElementById('announcement-list');
+    const container = document.getElementById('announcements-list-general');
     const summary = document.getElementById('announcement-page-summary');
 
     if (!container) return;
@@ -259,8 +251,8 @@ async function loadAnnouncements(type = '') {
             throw new Error('公告載入失敗');
         }
 
-        const data = await response.json();
-        renderAnnouncementList(data.announcements || [], type);
+            const data = await response.json();
+            renderAnnouncementList(data.announcements || [], type);
     } catch (error) {
         console.error('公告載入失敗:', error);
         container.innerHTML = '<p style="color: #999;">公告載入失敗，請稍後再試</p>';
@@ -277,11 +269,23 @@ function parseAnnouncementDisplay(announcement) {
     return { title, content };
 }
 
+function formatAnnouncementContent(content) {
+    if (!content) return '';
+    const screegoRegex = /(https?:\/\/app\.screego\.net\/\?room=[A-Za-z0-9]+)/g;
+    const escaped = escapeHtml(content);
+    return escaped.replace(screegoRegex, url => `
+        <a href="${url}" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>
+    `.trim());
+}
+
 function renderAnnouncementList(announcements, type = '') {
-    const container = document.getElementById('announcement-list');
+    const container = document.getElementById('announcements-list-general');
     const summary = document.getElementById('announcement-page-summary');
 
     if (!container) return;
+
+    // 先確保以時間排序（確保最新在前）
+    announcements = (announcements || []).slice().sort(compareAnnouncementsDesc);
 
     if (!announcements.length) {
         container.innerHTML = '<p style="color: #999;">暫無公告</p>';
@@ -293,9 +297,10 @@ function renderAnnouncementList(announcements, type = '') {
         summary.textContent = type ? `${type}：${announcements.length} 則` : `全部公告：${announcements.length} 則`;
     }
 
-    container.innerHTML = announcements.map(announcement => {
+    const htmlPieces = announcements.map(announcement => {
         const parsed = parseAnnouncementDisplay(announcement);
         const courseName = announcement.course_name || announcement.course_id || '未指定課程';
+        const displayContent = formatAnnouncementContent(parsed.content);
 
         return `
             <div class="announce-item">
@@ -303,12 +308,15 @@ function renderAnnouncementList(announcements, type = '') {
                 <div class="announce-content">
                     <div class="announce-course">${escapeHtml(courseName)}</div>
                     <div class="announce-title">${escapeHtml(parsed.title)}</div>
-                    <div class="announce-desc">${escapeHtml(parsed.content)}</div>
+                    <div class="announce-desc">${displayContent}</div>
                     <div class="announce-date">${escapeHtml(announcement.due_date || '無截止日期')}</div>
                 </div>
             </div>
         `;
-    }).join('');
+    });
+
+    // 反轉 HTML 片段以確保最新公告顯示在最上方
+    container.innerHTML = htmlPieces.reverse().join('');
 }
 
 // ========== 登出 ==========
@@ -387,6 +395,25 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// 比較公告時間（穩定）：先比 due_date，沒有日期則 fallback 為 notification_id
+function compareAnnouncementsDesc(a, b) {
+    const getTime = x => {
+        if (!x) return 0;
+        if (x.due_date) {
+            const t = new Date(x.due_date).getTime();
+            return isNaN(t) ? 0 : t;
+        }
+        if (x.notification_id) return parseInt(x.notification_id, 36) || 0;
+        return 0;
+    };
+    const ta = getTime(a);
+    const tb = getTime(b);
+    if (tb !== ta) return tb - ta;
+    // 最後 fallback：字串比較（避免不穩定排序）
+    if (a.notification_id && b.notification_id) return b.notification_id.localeCompare(a.notification_id);
+    return 0;
+}
+
 // 監聽 Enter 鍵
 document.getElementById('login-pass').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
@@ -440,14 +467,14 @@ function displayAnnouncementsByType(announcements) {
     const sortedAnnouncements = [...announcements].sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
     
     const typeMapping = {
-        '公告': 'announcements-list-general',
-        '一般公告': 'announcements-list-general',
-        '線上課程': 'announcements-list-general',
-        '作業通知': 'announcements-list-homework',
-        '考試通知': 'announcements-list-exam',
-        '課程異動通知': 'announcements-list-courseChange',
-        '討論區': 'announcements-list-discussion',
-        '成績公告': 'announcements-list-grade'
+        '公告': 'course-announcements-list-general',
+        '一般公告': 'course-announcements-list-general',
+        '線上課程': 'course-announcements-list-general',
+        '作業通知': 'course-announcements-list-homework',
+        '考試通知': 'course-announcements-list-exam',
+        '課程異動通知': 'course-announcements-list-courseChange',
+        '討論區': 'course-announcements-list-discussion',
+        '成績公告': 'course-announcements-list-grade'
     };
     
     for (const containerId of Object.values(typeMapping)) {
@@ -455,34 +482,28 @@ function displayAnnouncementsByType(announcements) {
         if (container) container.innerHTML = '<p style="color: #999;">暫無此類型公告</p>';
     }
     
-    if (!sortedAnnouncements || sortedAnnouncements.length === 0) return;
-    
+        if (!sortedAnnouncements || sortedAnnouncements.length === 0) return;
+
+    // 將每個分類的公告先收集成陣列片段，最後反轉並寫回 DOM，確保最新在最上方
+    const buckets = {};
     for (const announcement of sortedAnnouncements) {
         let type = announcement.type || '公告';
         let containerId = typeMapping[type];
-        
+
         if (!containerId && announcement.information && announcement.information.includes('screego')) {
             containerId = 'announcements-list-general';
         }
         if (!containerId) continue;
-        
-        const container = document.getElementById(containerId);
-        if (!container) continue;
-        
-        if (container.innerHTML.includes('暫無此類型公告')) container.innerHTML = '';
-        
+
+        if (!buckets[containerId]) buckets[containerId] = [];
+
         const info = announcement.information || '';
         const lines = info.split('\n\n');
         const title = lines[0] || '公告';
         let content = lines.slice(1).join('\n\n') || '';
-        
-        const screegoMatch = content.match(/(https?:\/\/app\.screego\.net\/\?room=[a-zA-Z0-9]+)/);
-        let displayContent = escapeHtml(content);
-        if (screegoMatch) {
-            displayContent = displayContent.replace(screegoMatch[0], `<a href="${screegoMatch[0]}" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>`);
-        }
-        
-        container.innerHTML += `
+        const displayContent = formatAnnouncementContent(content);
+
+        buckets[containerId].push(`
             <div class="announce-item">
                 <div class="announce-dot"></div>
                 <div class="announce-content">
@@ -491,7 +512,17 @@ function displayAnnouncementsByType(announcements) {
                     <div class="announce-date">${announcement.due_date || '日期未定'}</div>
                 </div>
             </div>
-        `;
+        `);
+    }
+
+    for (const [containerId, pieces] of Object.entries(buckets)) {
+        const container = document.getElementById(containerId);
+        if (!container) continue;
+        if (!pieces.length) {
+            container.innerHTML = '<p style="color: #999;">暫無公告</p>';
+        } else {
+            container.innerHTML = pieces.reverse().join('');
+        }
     }
 }
 

@@ -304,8 +304,11 @@ def get_announcements():
     params = [session["user_id"]]
     type_filter = ""
     if requested_type:
-        type_filter = "AND n.type = ?"
-        params.append(requested_type)
+        if requested_type in ("一般公告", "公告"):
+            type_filter = "AND n.type IN ('公告', '一般公告')"
+        else:
+            type_filter = "AND n.type = ?"
+            params.append(requested_type)
 
     cursor.execute(f"""
         SELECT n.notification_id, n.course_id, n.type, n.information, n.due_date,
@@ -337,8 +340,11 @@ def get_teacher_announcements():
     params = [session["user_id"]]
     type_filter = ""
     if requested_type:
-        type_filter = "AND n.type = ?"
-        params.append(requested_type)
+        if requested_type in ("一般公告", "公告"):
+            type_filter = "AND n.type IN ('公告', '一般公告')"
+        else:
+            type_filter = "AND n.type = ?"
+            params.append(requested_type)
 
     cursor.execute(f"""
         SELECT n.notification_id, n.course_id, n.type, n.information, n.due_date,
@@ -672,7 +678,7 @@ def get_all_announcements():
         WHERE n.course_id IN (
             SELECT course_id FROM Enrolls WHERE student_id = ?
         )
-        ORDER BY n.rowid DESC
+        ORDER BY n.due_date DESC, n.rowid DESC
     """, (session["user_id"],))
     
     announcements = cursor.fetchall()
