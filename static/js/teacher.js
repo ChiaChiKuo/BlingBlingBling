@@ -262,9 +262,18 @@ function displayCourseDetail(data) {
     document.getElementById('course-semester').textContent = course.semester || '114_2';
     document.getElementById('course-mode').textContent = course.is_online ? '線上課程' : '實體課程';
 
-    // 判斷是否為可直播的課程（資料庫管理、管理資訊系統、資料視覺化）
-    const onlineCourseNames = ['資料庫管理', '管理資訊系統', '資料視覺化'];
-    const canLive = onlineCourseNames.some(name => course.course_name.includes(name));
+    // 根據資料庫的 is_online 欄位判斷是否可直播（主要判斷方式）
+    // 如果 is_online 為 null/undefined，則回退到課程名稱檢查
+    let canLive = false;
+    
+    if (course.is_online !== null && course.is_online !== undefined) {
+        // 如果 is_online 有值，則直接使用
+        canLive = !!course.is_online;
+    } else {
+        // 備用方案：檢查課程名稱（以防 is_online 未被正確傳送）
+        const onlineCourseNames = ['資料庫管理', '管理資訊系統', '資料視覺化'];
+        canLive = onlineCourseNames.some(name => course.course_name.includes(name));
+    }
     
     // 顯示或隱藏課程名稱旁邊的按鈕
     const liveBtn = document.getElementById('online-live-btn');
