@@ -3,7 +3,9 @@ function initializeApp() {
     if (isLoggedIn) {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
-        
+
+        goPage('courses'); // ⭐⭐⭐ 加這行
+
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'page-courses') {
@@ -18,7 +20,6 @@ function initializeApp() {
         document.getElementById('app-page').style.display = 'none';
     }
 }
-
 // ========== 登入 ==========
 function doLogin() {
     const u = document.getElementById('login-user').value.trim();
@@ -159,7 +160,7 @@ async function loadAllAnnouncements() {
 }
 
 // ========== 頁面切換 ==========
-const pages = ['home', 'courses', 'announcements', 'settings', 'course-detail'];
+const pages = ['courses', 'announcements', 'settings', 'course-detail'];
 let currentAnnouncementType = '';
 
 function goPage(name) {
@@ -171,7 +172,7 @@ function goPage(name) {
     const targetPage = document.getElementById('page-' + name);
     if (targetPage) targetPage.classList.add('active');
     
-    const navItems = ['home', 'courses', 'announcements', 'settings'];
+    const navItems = ['courses', 'announcements', 'settings'];
     navItems.forEach(p => {
         const nav = document.getElementById('nav-' + p);
         if (nav) nav.classList.remove('active');

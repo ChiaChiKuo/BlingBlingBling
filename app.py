@@ -18,7 +18,7 @@ def get_db():
 
 # 首頁 - 導向登入頁
 @app.route("/")
-def home():
+def courses():
     return render_template("login.html")
 
 
@@ -211,7 +211,7 @@ def events():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for('home'))
+    return redirect(url_for('courses'))
 
 # API: 更新使用者個人資料
 @app.route("/api/profile", methods=["PUT"])

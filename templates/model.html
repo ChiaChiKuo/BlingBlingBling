@@ -79,7 +79,7 @@
     </div>
     <div class="nav-logo-img">🎓</div>
     <span class="nav-school">國立中山大學</span>
-    <span class="nav-link" onclick="goPage('home')">發現課程</span>
+    <span class="nav-link" onclick="goPage('courses')">發現課程</span>
 
     <div class="nav-spacer"></div>
 
@@ -113,10 +113,6 @@
       </div>
 
       <div class="sidebar-section-title">我的學習</div>
-
-      <div class="sidebar-item active" id="nav-home" onclick="goPage('home')">
-        <span class="si-icon">🏠</span> 首頁
-      </div>
       <div class="sidebar-item" id="nav-courses" onclick="goPage('courses')">
         <span class="si-icon">📖</span> 我的課程
       </div>
@@ -160,137 +156,6 @@
 
     <!-- MAIN -->
     <main class="main-content">
-
-      <!-- HOME -->
-      <div class="page active" id="page-home">
-        <div class="home-feed">
-          <div class="feed-tabs">
-            <div class="feed-tab active">動態</div>
-            <div class="feed-tab" onclick="showToast('最新內容載入中...')">最新內容</div>
-          </div>
-
-          <!-- card 1 -->
-          <div class="feed-card">
-            <span class="feed-three-dots">···</span>
-            <div class="feed-card-header">
-              <div class="feed-icon">💬</div>
-              <div class="feed-meta">
-                <div class="feed-title">新文章</div>
-                <div class="feed-time">2026.05.15 17:40</div>
-              </div>
-            </div>
-            <div class="feed-body">
-              魏瑋珣 在課程 <span class="feed-link">管理資訊系統-MIS304</span>
-              的討論區 <span class="feed-link">5/14 課堂加分(5/16 23:59截止)</span> 中發布了新文章
-              <div class="highlight-box">
-                <strong>Group K</strong>
-                1.If NSYSU builds one super app for students, it must contain the following
-                functions to ensure the flexibility and retention，1) Digital ...
-              </div>
-            </div>
-          </div>
-
-          <!-- card 2 -->
-          <div class="feed-card">
-            <span class="feed-three-dots">···</span>
-            <div class="feed-card-header">
-              <div class="feed-icon">📣</div>
-              <div class="feed-meta">
-                <div class="feed-title">公告更新</div>
-                <div class="feed-time">2026.05.15 13:40</div>
-              </div>
-            </div>
-            <div class="feed-body">
-              課程 <span class="feed-link">資料視覺化-CSS137</span> 更新了公告
-              <div class="highlight-box">
-                <strong>期末分組報告名單</strong>
-                1.期末分組報告名單已經更新報告順序。2.另外如果有還未在分組名單上的同學，請私訊助教做更正。（助教信箱：m136070014@g-mail.nsysu.edu.tw）3.報告時間10分鐘、老師問答5分鐘。4.題目自選，並利用Power BI進行視覺化呈現。5.另外請各組組...
-              </div>
-            </div>
-          </div>
-
-          <!-- card 3 -->
-          <div class="feed-card">
-            <span class="feed-three-dots">···</span>
-            <div class="feed-card-header">
-              <div class="feed-icon">📋</div>
-              <div class="feed-meta">
-                <div class="feed-title">作業繳交提醒</div>
-                <div class="feed-time">2026.05.14 09:00</div>
-              </div>
-            </div>
-            <div class="feed-body">
-              課程 <span class="feed-link">資料庫管理-MIS205</span> 的作業「第五章 SQL查詢練習」截止日為 2026.05.17 23:59
-              <div class="highlight-box">
-                <strong>作業說明</strong>
-                請完成 Lab5 中所有 SQL 查詢題目，並上傳 .sql 檔案。注意：每題需要加上說明注釋，否則酌量扣分...
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT: recent visits -->
-        <div class="home-recent">
-          <div class="section-card">
-            <h3>🕐 最近造訪</h3>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">資料庫管理-MIS205</div>
-                <div class="recent-dept">資訊管理學系</div>
-              </div>
-              <div class="recent-score">2 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">倫理與社會責任的...</div>
-                <div class="recent-dept">管理學院</div>
-              </div>
-              <div class="recent-score">0 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">資料視覺化-CSS137</div>
-                <div class="recent-dept">社科院</div>
-              </div>
-              <div class="recent-score">0 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">管理資訊系統-MIS...</div>
-                <div class="recent-dept">資訊管理學系</div>
-              </div>
-              <div class="recent-score">2 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">商事法-MIS206</div>
-                <div class="recent-dept">資訊管理學系</div>
-              </div>
-              <div class="recent-score">2 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">🎭</div>
-              <div class="recent-info">
-                <div class="recent-name">莎劇與文化詮釋-G...</div>
-                <div class="recent-dept">博雅向度一＜美學</div>
-              </div>
-              <div class="recent-score">0 0</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- COURSES -->
       <!-- COURSES -->
       <div class="page" id="page-courses">

@@ -3,11 +3,16 @@ function initializeApp() {
     if (isLoggedIn) {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
-        
+
+        goPage('courses'); // ⭐⭐⭐ 加這行
+
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'page-courses') {
                 loadCourses();
+            }
+            if (activePage && activePage.id === 'page-announcements') {
+                loadAllAnnouncements();
             }
         }, 100);
     } else {
@@ -15,6 +20,7 @@ function initializeApp() {
         document.getElementById('app-page').style.display = 'none';
     }
 }
+
 
 // ========== 登入 ==========
 function doLogin() {
@@ -121,7 +127,7 @@ function displayCourses(courses) {
 }
 
 // ========== 頁面切換 ==========
-const pages = ['home', 'courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings', 'course-detail'];
+const pages = ['courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings', 'course-detail'];
 
 function goPage(name) {
     pages.forEach(p => {
@@ -132,7 +138,7 @@ function goPage(name) {
     const targetPage = document.getElementById('page-' + name);
     if (targetPage) targetPage.classList.add('active');
     
-    const navItems = ['home', 'courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings'];
+    const navItems = ['courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings'];
     navItems.forEach(p => {
         const nav = document.getElementById('nav-' + p);
         if (nav) nav.classList.remove('active');
