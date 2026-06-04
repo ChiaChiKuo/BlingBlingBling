@@ -35,7 +35,7 @@ CREATE TABLE Notification(
  course_id CHAR(10) NOT NULL,
  type VARCHAR,
  information VARCHAR,
- due_date DATE,
+ due_date DATE NOT NULL,
  PRIMARY KEY (notification_id, course_id),
  FOREIGN KEY (course_id) REFERENCES Course(course_id)
  ON DELETE CASCADE ON UPDATE CASCADE,
@@ -128,3 +128,7 @@ INSERT INTO Setting VALUES ('B0111111112', TRUE, '考試通知');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '課程異動通知');
 INSERT INTO Setting VALUES ('B0111111112', FALSE, '討論區回覆');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '成績公告');
+
+INSERT INTO Notification VALUES ('T123456789', '1', 'MIS205', '一般公告', '這個通知來自資料庫-一般公告', '2026-06-05');
+INSERT INTO Notification VALUES ('T123456789', '2', 'MIS205', '作業公告', '這個通知來自資料庫-作業公告', '2026-06-05');
+INSERT INTO Notification VALUES ('T123456789', '3', 'MIS205', '考試公告', '這個通知來自資料庫-考試公告', '2026-06-05');
