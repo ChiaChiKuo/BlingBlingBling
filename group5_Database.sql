@@ -129,6 +129,9 @@ INSERT INTO Setting VALUES ('B0111111112', TRUE, '課程異動通知');
 INSERT INTO Setting VALUES ('B0111111112', FALSE, '討論區回覆');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '成績公告');
 
-INSERT INTO Notification VALUES ('T123456789', '1', 'MIS205', '一般公告', '這個通知來自資料庫-一般公告', '2026-06-05');
-INSERT INTO Notification VALUES ('T123456789', '2', 'MIS205', '作業公告', '這個通知來自資料庫-作業公告', '2026-06-05');
-INSERT INTO Notification VALUES ('T123456789', '3', 'MIS205', '考試公告', '這個通知來自資料庫-考試公告', '2026-06-05');
+INSERT INTO Notification VALUES ('T192837465', 'a', 'MIS304', '一般公告', '大家都A+', '2026-06-11');
+INSERT INTO Notification VALUES ('T192837465', 'b', 'MIS304', '作業通知', '作業作業', '2026-06-07');
+INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', '考試通知', '期末考爆爆王', '2026-06-03');
+INSERT INTO Notification VALUES ('T123456789', 'd', 'MIS205', '課程異動通知', '期末報告取消~~好ㄝ', '2026-06-10');
+INSERT INTO Notification VALUES ('T192837465', 'e', 'MIS205', '討論區', 'Do you like coding?', '2026-06-10');
+
