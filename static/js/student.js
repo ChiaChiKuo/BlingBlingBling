@@ -462,6 +462,39 @@ function displayCourseDetail(data) {
     
     displayAnnouncementsByType(announcements);
     displayModules(modules);
+    loadCourseMaterials(course.course_id);
+}
+
+async function loadCourseMaterials(courseId) {
+    const container = document.getElementById('course-materials-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="color: #999;">載入教材中...</p>';
+
+    try {
+        const response = await fetch(`/api/course/${courseId}`);
+        if (!response.ok) throw new Error('無法載入教材');
+        const data = await response.json();
+        const materials = data.materials || [];
+
+        if (!materials.length) {
+            container.innerHTML = '<p style="color: #999;">目前尚無教材上傳</p>';
+            return;
+        }
+
+        container.innerHTML = materials.map(mat => `
+            <div class="announce-item" style="padding: 12px;">
+                <div class="announce-content">
+                    <div class="announce-title">${escapeHtml(mat.filename)}</div>
+                    <div class="announce-desc" style="margin: 6px 0; color: #555;">上傳時間：${escapeHtml(mat.uploaded_at)}</div>
+                    <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none; display: inline-flex;">下載教材</a>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('載入教材失敗:', error);
+        container.innerHTML = '<p style="color: #999;">教材載入失敗，請稍後再試</p>';
+    }
 }
 
 function displayAnnouncementsByType(announcements) {
@@ -544,11 +577,16 @@ function switchCourseTab(tabName, event) {
     tabs.forEach(tab => tab.classList.remove('active'));
     if (event && event.target) event.target.classList.add('active');
     
-    const allContents = ['course-overview', 'course-modules', 'course-announcements', 'course-homework', 'course-exam', 'course-courseChange', 'course-discussion', 'course-grade'];
+    const allContents = ['course-overview', 'course-materials', 'course-modules', 'course-announcements', 'course-homework', 'course-exam', 'course-courseChange', 'course-discussion', 'course-grade'];
     allContents.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     
     switch(tabName) {
-        case 'overview': document.getElementById('course-overview').style.display = 'block'; break;
+        case 'overview':
+            document.getElementById('course-overview').style.display = 'block';
+            break;
+        case 'materials':
+            document.getElementById('course-materials').style.display = 'block';
+            break;
         case 'modules': document.getElementById('course-modules').style.display = 'block'; break;
         case 'announcements': document.getElementById('course-announcements').style.display = 'block'; break;
         case 'homework': document.getElementById('course-homework').style.display = 'block'; break;

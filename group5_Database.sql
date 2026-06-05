@@ -96,6 +96,16 @@ CREATE TABLE Material(
  FOREIGN KEY (module_id) REFERENCES Module(module_id)
  ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE TABLE CourseMaterial(
+ material_id CHAR(10) NOT NULL PRIMARY KEY,
+ course_id CHAR(10) NOT NULL,
+ filename VARCHAR NOT NULL,
+ stored_filename VARCHAR NOT NULL,
+ uploaded_at TEXT NOT NULL,
+ uploaded_by CHAR(10) NOT NULL,
+ FOREIGN KEY (course_id) REFERENCES Course(course_id)
+ ON DELETE CASCADE ON UPDATE CASCADE
+);
 INSERT INTO Student VALUES ('B0111111111','Amy','B011111111@nsysu.student.edu.tw','Amy111');
 INSERT INTO Student VALUES ('B0111111112','Andy','B011111112@nsysu.student.edu.tw','Andy112');
 INSERT INTO Teacher VALUES ('T123456789','pclo','T123456789@nsysu.student.edu.tw','T12345pclo');

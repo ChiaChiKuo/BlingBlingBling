@@ -1,16 +1,32 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory
 import sqlite3
 import uuid
 import time
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'nsysu_learning_platform_secret_key_2026'
 
 SCREEGO_URL = "https://app.screego.net"
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads', 'materials')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def get_db():
     conn = sqlite3.connect('project.db')
     conn.row_factory = sqlite3.Row
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS CourseMaterial(
+            material_id CHAR(10) NOT NULL PRIMARY KEY,
+            course_id CHAR(10) NOT NULL,
+            filename VARCHAR NOT NULL,
+            stored_filename VARCHAR NOT NULL,
+            uploaded_at TEXT NOT NULL,
+            uploaded_by CHAR(10) NOT NULL,
+            FOREIGN KEY (course_id) REFERENCES Course(course_id)
+        )
+    """)
     return conn
 
 @app.route("/")
@@ -475,34 +491,129 @@ def get_course_detail(course_id):
     """, (course_id,))
     modules = cursor.fetchall()
 
+    cursor.execute("""
+        SELECT material_id, filename, uploaded_at, uploaded_by
+        FROM CourseMaterial
+        WHERE course_id = ?
+        ORDER BY uploaded_at DESC
+    """, (course_id,))
+    materials = cursor.fetchall()
+
     conn.close()
 
     return jsonify({
         "course": dict(course),
         "announcements": [dict(a) for a in announcements],
-        "modules": [dict(m) for m in modules]
+        "modules": [dict(m) for m in modules],
+        "materials": [dict(m) for m in materials]
     })
 
-@app.route("/api/course/<course_id>/materials")
+@app.route("/api/course/<course_id>/materials", methods=["GET", "POST"])
 def get_course_materials(course_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    if request.method == "POST":
+        if session["role"] != "teacher":
+            return jsonify({"error": "Unauthorized"}), 401
+
+        if "material" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+
+        file = request.files["material"]
+        if not file or file.filename == "":
+            return jsonify({"error": "No file selected"}), 400
+
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
+            (session["user_id"], course_id)
+        )
+        course_owner = cursor.fetchone()
+        if not course_owner:
+            conn.close()
+            return jsonify({"error": "Unauthorized"}), 403
+
+        filename = secure_filename(file.filename)
+        material_id = str(uuid.uuid4())[:8]
+        stored_filename = f"{material_id}_{filename}"
+        course_folder = os.path.join(UPLOAD_FOLDER, course_id)
+        os.makedirs(course_folder, exist_ok=True)
+        file_path = os.path.join(course_folder, stored_filename)
+        file.save(file_path)
+
+        uploaded_at = time.strftime("%Y-%m-%d %H:%M:%S")
+        cursor.execute(
+            "INSERT INTO CourseMaterial (material_id, course_id, filename, stored_filename, uploaded_at, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)",
+            (material_id, course_id, filename, stored_filename, uploaded_at, session["user_id"])
+        )
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "material_id": material_id,
+            "filename": filename,
+            "download_url": url_for('download_material', material_id=material_id)
+        })
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT material_id, filename, uploaded_at, uploaded_by
+        FROM CourseMaterial
+        WHERE course_id = ?
+        ORDER BY uploaded_at DESC
+    """, (course_id,))
+    materials = cursor.fetchall()
+    conn.close()
+
+    return jsonify({"materials": [dict(m) for m in materials]})
+
+@app.route('/materials/<material_id>/download')
+def download_material(material_id):
     if "user_id" not in session:
         return jsonify({"error": "Unauthorized"}), 401
 
     conn = get_db()
     cursor = conn.cursor()
+    cursor.execute(
+        "SELECT course_id, filename, stored_filename FROM CourseMaterial WHERE material_id = ?",
+        (material_id,)
+    )
+    material = cursor.fetchone()
+    if not material:
+        conn.close()
+        return jsonify({"error": "Material not found"}), 404
 
-    cursor.execute("""
-        SELECT m.module_id, m.title, mat.material
-        FROM Module m
-        LEFT JOIN Material mat ON m.module_id = mat.module_id
-        WHERE m.course_id = ?
-        ORDER BY m.module_id
-    """, (course_id,))
+    course_id = material["course_id"]
+    filename = material["filename"]
+    stored_filename = material["stored_filename"]
 
-    materials = cursor.fetchall()
+    if session["role"] == "student":
+        cursor.execute(
+            "SELECT 1 FROM Enrolls WHERE student_id = ? AND course_id = ?",
+            (session["user_id"], course_id)
+        )
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "Unauthorized"}), 403
+    elif session["role"] == "teacher":
+        cursor.execute(
+            "SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
+            (session["user_id"], course_id)
+        )
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "Unauthorized"}), 403
+    else:
+        conn.close()
+        return jsonify({"error": "Unauthorized"}), 403
+
     conn.close()
-
-    return jsonify({"materials": [dict(m) for m in materials]})
+    material_folder = os.path.join(UPLOAD_FOLDER, course_id)
+    return send_from_directory(material_folder, stored_filename, as_attachment=True, download_name=filename)
 
 @app.route("/api/notification_setting", methods=["GET"])
 def get_notification_setting():

@@ -389,6 +389,7 @@
             <!-- 課程內容標籤頁 -->
             <div class="course-tabs">
               <div class="course-tab active" onclick="switchCourseTab('overview', event)">課程概述</div>
+              <div class="course-tab" onclick="switchCourseTab('materials', event)">教材上傳</div>
               <div class="course-tab" onclick="switchCourseTab('general', event)">一般公告</div>
               <div class="course-tab" onclick="switchCourseTab('homework', event)">作業通知</div>
               <div class="course-tab" onclick="switchCourseTab('exam', event)">考試通知</div>
@@ -420,7 +421,17 @@
               </div>
             </div>
 
-
+            <div id="course-materials" class="course-tab-content" style="display: none;">
+              <div class="settings-section">
+                <h3>教材上傳與管理</h3>
+                <p style="color: #555; margin-bottom: 12px;">請上傳此課程的教材，學生即可在「我的課程」下載。</p>
+                <input type="file" id="material-file" class="settings-input" style="width:100%; margin-bottom: 14px;">
+                <button class="btn-primary" style="margin-bottom: 20px;" onclick="uploadCourseMaterial()">上傳教材</button>
+                <div id="uploaded-materials-list" class="announce-list">
+                  <p style="color: #999;">載入教材中...</p>
+                </div>
+              </div>
+            </div>
 
           <!-- 一般公告 -->
           <div id="course-general" class="course-tab-content" style="display: none;">

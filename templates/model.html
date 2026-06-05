@@ -313,6 +313,7 @@
           <!-- 課程內容標籤頁 -->
           <div class="course-tabs">
             <div class="course-tab active" onclick="switchCourseTab('overview', event)">課程概述</div>
+            <div class="course-tab" onclick="switchCourseTab('materials', event)">教材下載</div>
             <div class="course-tab" onclick="switchCourseTab('modules', event)">單元內容</div>
             <div class="course-tab" onclick="switchCourseTab('announcements', event)">一般公告</div>
             <div class="course-tab" onclick="switchCourseTab('homework', event)">作業通知</div>
@@ -341,6 +342,15 @@
                 <tr><td style="padding: 8px 0;"><strong>學期：</strong></td><td id="course-semester">-</td></tr>
                 <tr><td style="padding: 8px 0;"><strong>上課方式：</strong></td><td id="course-mode">-</td></tr>
               </table>
+            </div>
+          </div>
+
+          <div id="course-materials" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>教材下載</h3>
+              <div id="course-materials-list" class="announce-list" style="margin-bottom: 0;">
+                <p style="color: #999;">載入教材中...</p>
+              </div>
             </div>
           </div>
 

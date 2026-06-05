@@ -288,6 +288,78 @@ function displayCourseDetail(data) {
     }
 
     loadCategorizedAnnouncements(course.course_id);
+    loadCourseMaterials(course.course_id);
+}
+
+async function loadCourseMaterials(courseId) {
+    const container = document.getElementById('uploaded-materials-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="color: #999;">載入教材中...</p>';
+
+    try {
+        const response = await fetch(`/api/course/${courseId}`);
+        if (!response.ok) throw new Error('無法載入教材');
+
+        const data = await response.json();
+        const materials = data.materials || [];
+
+        if (!materials.length) {
+            container.innerHTML = '<p style="color: #999;">尚未上傳教材</p>';
+            return;
+        }
+
+        container.innerHTML = materials.map(mat => `
+            <div class="announce-item" style="padding: 12px;">
+                <div class="announce-content">
+                    <div class="announce-title">${escapeHtml(mat.filename)}</div>
+                    <div class="announce-desc" style="margin: 8px 0; color: #555;">上傳時間：${escapeHtml(mat.uploaded_at)}</div>
+                    <div class="announce-actions">
+                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="margin-right: 10px; display: inline-flex; text-decoration: none;">下載</a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('載入教材失敗:', error);
+        container.innerHTML = '<p style="color: #999;">教材載入失敗，請稍後再試。</p>';
+    }
+}
+
+async function uploadCourseMaterial() {
+    if (!currentCourseId) {
+        showToast('請先從「我的課程」進入課程頁面');
+        return;
+    }
+
+    const fileInput = document.getElementById('material-file');
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        showToast('請選擇要上傳的教材檔案');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('material', file);
+
+    try {
+        const response = await fetch(`/api/course/${currentCourseId}/materials`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || '上傳失敗');
+        }
+
+        showToast('教材已上傳');
+        fileInput.value = '';
+        loadCourseMaterials(currentCourseId);
+    } catch (error) {
+        console.error('上傳教材失敗:', error);
+        showToast('教材上傳失敗');
+    }
 }
 
 // 載入分類公告（教師端）
@@ -460,6 +532,7 @@ function switchCourseTab(tabName, event) {
     // 隱藏所有內容區塊
     const allContents = [
         'course-overview',
+        'course-materials',
         'course-general',
         'course-homework',
         'course-exam',
@@ -478,6 +551,9 @@ function switchCourseTab(tabName, event) {
     switch(tabName) {
         case 'overview':
             document.getElementById('course-overview').style.display = 'block';
+            break;
+        case 'materials':
+            document.getElementById('course-materials').style.display = 'block';
             break;
         case 'general':
             document.getElementById('course-general').style.display = 'block';
