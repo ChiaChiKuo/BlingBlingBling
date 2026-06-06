@@ -315,7 +315,15 @@ async function loadCourseMaterials(courseId) {
                     <div class="announce-title">${escapeHtml(mat.filename)}</div>
                     <div class="announce-desc" style="margin: 8px 0; color: #555;">上傳時間：${escapeHtml(mat.uploaded_at)}</div>
                     <div class="announce-actions">
-                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="margin-right: 10px; display: inline-flex; text-decoration: none;">下載</a>
+                        ${mat.filename.toLowerCase().endsWith('.pdf') ? `
+                            <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 10px;">
+                                預覽 PDF
+                            </button>
+                        ` : ''}
+
+                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="margin-right: 10px; display: inline-flex; text-decoration: none;">
+                            下載
+                        </a>
                     </div>
                 </div>
             </div>
@@ -1014,4 +1022,31 @@ function createLiveRoomFromCourse() {
         console.error('Error:', error);
         showToast('建立失敗，請稍後再試');
     });
+}
+function openPdfViewer(materialId, filename) {
+    const viewer = document.createElement('div');
+
+    viewer.style.position = 'fixed';
+    viewer.style.top = '0';
+    viewer.style.left = '0';
+    viewer.style.width = '100vw';
+    viewer.style.height = '100vh';
+    viewer.style.background = 'rgba(0,0,0,0.75)';
+    viewer.style.zIndex = '9999';
+
+    viewer.innerHTML = `
+        <div style="width:90%; height:90%; margin:3vh auto; background:white; border-radius:12px; overflow:hidden;">
+            <div style="height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; border-bottom:1px solid #ddd;">
+                <strong>${filename}</strong>
+                <button onclick="this.closest('div[style*=fixed]').remove()" style="font-size:20px; border:none; background:none; cursor:pointer;">✕</button>
+            </div>
+
+            <iframe
+                src="/materials/${materialId}/preview"
+                style="width:100%; height:calc(100% - 50px); border:none;">
+            </iframe>
+        </div>
+    `;
+
+    document.body.appendChild(viewer);
 }

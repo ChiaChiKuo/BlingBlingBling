@@ -614,7 +614,63 @@ def download_material(material_id):
     conn.close()
     material_folder = os.path.join(UPLOAD_FOLDER, course_id)
     return send_from_directory(material_folder, stored_filename, as_attachment=True, download_name=filename)
+@app.route('/materials/<material_id>/preview')
+def preview_material(material_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
 
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT course_id, filename, stored_filename FROM CourseMaterial WHERE material_id = ?",
+        (material_id,)
+    )
+    material = cursor.fetchone()
+
+    if not material:
+        conn.close()
+        return jsonify({"error": "Material not found"}), 404
+
+    course_id = material["course_id"]
+    filename = material["filename"]
+    stored_filename = material["stored_filename"]
+
+    if not filename.lower().endswith(".pdf"):
+        conn.close()
+        return jsonify({"error": "Only PDF files can be previewed"}), 400
+
+    if session["role"] == "student":
+        cursor.execute(
+            "SELECT 1 FROM Enrolls WHERE student_id = ? AND course_id = ?",
+            (session["user_id"], course_id)
+        )
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "Unauthorized"}), 403
+
+    elif session["role"] == "teacher":
+        cursor.execute(
+            "SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
+            (session["user_id"], course_id)
+        )
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "Unauthorized"}), 403
+
+    else:
+        conn.close()
+        return jsonify({"error": "Unauthorized"}), 403
+
+    conn.close()
+
+    material_folder = os.path.join(UPLOAD_FOLDER, course_id)
+
+    return send_from_directory(
+        material_folder,
+        stored_filename,
+        as_attachment=False,
+        mimetype="application/pdf"
+    )
 @app.route("/api/notification_setting", methods=["GET"])
 def get_notification_setting():
     if "user_id" not in session or session["role"] != "student":

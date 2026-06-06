@@ -487,7 +487,15 @@ async function loadCourseMaterials(courseId) {
                 <div class="announce-content">
                     <div class="announce-title">${escapeHtml(mat.filename)}</div>
                     <div class="announce-desc" style="margin: 6px 0; color: #555;">上傳時間：${escapeHtml(mat.uploaded_at)}</div>
-                    <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none; display: inline-flex;">下載教材</a>
+                    ${mat.filename.toLowerCase().endsWith('.pdf') ? `
+                        <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 8px;">
+                            預覽 PDF
+                        </button>
+                    ` : ''}
+
+                    <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none; display: inline-flex;">
+                        下載教材
+                    </a>
                 </div>
             </div>
         `).join('');
@@ -676,3 +684,30 @@ goPage = function(page) {
         setTimeout(initNotificationSettings, 100);
     }
 };
+function openPdfViewer(materialId, filename) {
+    const viewer = document.createElement('div');
+
+    viewer.style.position = 'fixed';
+    viewer.style.top = '0';
+    viewer.style.left = '0';
+    viewer.style.width = '100vw';
+    viewer.style.height = '100vh';
+    viewer.style.background = 'rgba(0,0,0,0.75)';
+    viewer.style.zIndex = '9999';
+
+    viewer.innerHTML = `
+        <div style="width:90%; height:90%; margin:3vh auto; background:white; border-radius:12px; overflow:hidden;">
+            <div style="height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; border-bottom:1px solid #ddd;">
+                <strong>${filename}</strong>
+                <button onclick="this.closest('div[style*=fixed]').remove()" style="font-size:20px; border:none; background:none; cursor:pointer;">✕</button>
+            </div>
+
+            <iframe
+                src="/materials/${materialId}/preview"
+                style="width:100%; height:calc(100% - 50px); border:none;">
+            </iframe>
+        </div>
+    `;
+
+    document.body.appendChild(viewer);
+}
