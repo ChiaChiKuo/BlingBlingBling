@@ -30,8 +30,6 @@ def get_db():
     conn.commit()
     return conn
 
-<<<<<<< HEAD
-
 NOTIFICATION_CATEGORY_MAP = {
     "assignment": {
         "notification_types": ("作業通知",),
@@ -85,8 +83,6 @@ def is_notification_type_enabled(cursor, student_id, setting_types):
     return True if setting is None else bool(setting["notification_switch"])
 
 # 首頁 - 導向登入頁
-=======
->>>>>>> origin/main
 @app.route("/")
 def courses():
     return render_template("login.html")
@@ -782,8 +778,6 @@ def update_notification_setting():
 
     return jsonify({"success": True})
 
-<<<<<<< HEAD
-
 @app.route("/api/notifications/unread", methods=["GET"])
 def get_unread_notifications():
     if "user_id" not in session or session["role"] != "student":
@@ -873,8 +867,6 @@ def mark_notification_read():
     return jsonify({"success": True})
 
 
-=======
->>>>>>> origin/main
 @app.route("/api/check_setting")
 def check_setting():
     if "user_id" not in session:
