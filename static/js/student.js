@@ -550,7 +550,7 @@ async function loadCourseMaterials(courseId) {
 }
 
 function displayAnnouncementsByType(announcements) {
-    const sortedAnnouncements = [...announcements].sort((a, b) => new Date(b.due_date) - new Date(a.due_date));
+    const sortedAnnouncements = [...announcements].sort(compareAnnouncementsDesc);
     
     const typeMapping = {
         '公告': 'course-announcements-list-general',
@@ -568,51 +568,15 @@ function displayAnnouncementsByType(announcements) {
         if (container) container.innerHTML = '<p style="color: #999;">暫無此類型公告</p>';
     }
     
-        if (!sortedAnnouncements || sortedAnnouncements.length === 0) return;
+    if (!sortedAnnouncements || sortedAnnouncements.length === 0) return;
 
-    // 將每個分類的公告先收集成陣列片段，最後反轉並寫回 DOM，確保最新在最上方
     const buckets = {};
     for (const announcement of sortedAnnouncements) {
         let type = announcement.type || '公告';
-<<<<<<< HEAD
-        
-        // 處理可能的類型名稱差異
-        if (type === '公告') type = '公告';
-        if (type === '一般公告') type = '公告';
-        
-        const containerId = typeMapping[type];
-        
-        if (containerId) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                // 如果當前容器顯示的是「暫無公告」，清空它
-                if (container.innerHTML.includes('暫無此類型公告')) {
-                    container.innerHTML = '';
-                }
-                
-                // 新增公告卡片
-                const parsed = parseAnnouncementDisplay(announcement);
-                const announcementHtml = `
-                    <div class="announce-item"
-                         data-notification-id="${escapeHtml(announcement.notification_id)}"
-                         data-course-id="${escapeHtml(announcement.course_id)}"
-                         data-notification-type="${escapeHtml(announcement.type || '')}"
-                         onclick="markNotificationRead('${escapeHtml(announcement.notification_id)}', '${escapeHtml(announcement.course_id)}', this)">
-                        <div class="announce-dot"></div>
-                        <div class="announce-content">
-                            <div class="announce-title">${escapeHtml(parsed.title)}</div>
-                            <div class="announce-desc">${escapeHtml(parsed.content)}</div>
-                            <div class="announce-date">${announcement.due_date || '日期未定'}</div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += announcementHtml;
-            }
-=======
         let containerId = typeMapping[type];
 
         if (!containerId && announcement.information && announcement.information.includes('screego')) {
-            containerId = 'announcements-list-general';
+            containerId = 'course-announcements-list-general';
         }
         if (!containerId) continue;
 
@@ -625,7 +589,11 @@ function displayAnnouncementsByType(announcements) {
         const displayContent = formatAnnouncementContent(content);
 
         buckets[containerId].push(`
-            <div class="announce-item">
+            <div class="announce-item"
+                 data-notification-id="${escapeHtml(announcement.notification_id)}"
+                 data-course-id="${escapeHtml(announcement.course_id)}"
+                 data-notification-type="${escapeHtml(announcement.type || '')}"
+                 onclick="markNotificationRead('${escapeHtml(announcement.notification_id)}', '${escapeHtml(announcement.course_id)}', this)">
                 <div class="announce-dot"></div>
                 <div class="announce-content">
                     <div class="announce-title">${escapeHtml(title)}</div>
@@ -642,8 +610,7 @@ function displayAnnouncementsByType(announcements) {
         if (!pieces.length) {
             container.innerHTML = '<p style="color: #999;">暫無公告</p>';
         } else {
-            container.innerHTML = pieces.reverse().join('');
->>>>>>> origin/main
+            container.innerHTML = pieces.join('');
         }
     }
 }
@@ -685,9 +652,6 @@ function switchCourseTab(tabName, event) {
         default: document.getElementById('course-overview').style.display = 'block';
     }
 }
-
-<<<<<<< HEAD
-
 
 //通知按鈕狀態變化
 // ── 通知設定 ──
@@ -794,77 +758,6 @@ function initNotificationSettings() {
       });
     })
     .catch(err => console.error('載入通知設定失敗', err));
-=======
-// 通知設定
-function toggleAllNotifications(el) {
-    el.classList.toggle('on');
-    const isOn = el.classList.contains('on');
-    
-    fetch('/api/notification_setting', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: '全部通知', notification_switch: isOn })
-    }).catch(err => console.error('儲存失敗', err));
-    
-    document.querySelectorAll('.notification-toggle').forEach(toggle => {
-        if (isOn) toggle.classList.add('on');
-        else toggle.classList.remove('on');
-        const label = toggle.closest('.settings-row').querySelector('.settings-label').childNodes[0].textContent.trim();
-        fetch('/api/notification_setting', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: label, notification_switch: isOn })
-        }).catch(err => console.error('儲存失敗', err));
-    });
->>>>>>> origin/main
-}
-
-function syncAllToggle() {
-    const allToggles = document.querySelectorAll('.notification-toggle');
-    const hasAnyOn = Array.from(allToggles).some(t => t.classList.contains('on'));
-    const allToggleBtn = document.querySelector('[onclick="toggleAllNotifications(this)"]');
-    if (allToggleBtn) {
-        const wasOn = allToggleBtn.classList.contains('on');
-        const shouldBeOn = hasAnyOn;
-        if (wasOn !== shouldBeOn) {
-            if (shouldBeOn) allToggleBtn.classList.add('on');
-            else allToggleBtn.classList.remove('on');
-            fetch('/api/notification_setting', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: '全部通知', notification_switch: shouldBeOn })
-            }).catch(err => console.error('同步更新全部通知資料庫失敗', err));
-        }
-    }
-}
-
-function initNotificationSettings() {
-    fetch('/api/notification_setting')
-        .then(res => res.json())
-        .then(data => {
-            data.settings.forEach(setting => {
-                document.querySelectorAll('.notification-toggle').forEach(toggle => {
-                    const label = toggle.closest('.settings-row').querySelector('.settings-label').childNodes[0].textContent.trim();
-                    if (label === setting.type) {
-                        if (setting.notification_switch) toggle.classList.add('on');
-                        else toggle.classList.remove('on');
-                    }
-                });
-            });
-            syncAllToggle();
-            document.querySelectorAll('.notification-toggle').forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    toggle.classList.toggle('on');
-                    const label = toggle.closest('.settings-row').querySelector('.settings-label').childNodes[0].textContent.trim();
-                    const isOn = toggle.classList.contains('on');
-                    fetch('/api/notification_setting', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type: label, notification_switch: isOn })
-                    }).then(() => syncAllToggle()).catch(err => console.error('儲存失敗', err));
-                });
-            });
-        }).catch(err => console.error('載入通知設定失敗', err));
 }
 
 const _origGoPage = goPage;
