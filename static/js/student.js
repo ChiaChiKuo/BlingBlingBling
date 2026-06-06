@@ -3,6 +3,9 @@ function initializeApp() {
     if (isLoggedIn) {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
+        loadUnreadNotificationDots();
+        
+        // 如果當前顯示的是課程頁面，載入課程
 
         goPage('courses'); // ⭐⭐⭐ 加這行
 
@@ -30,6 +33,7 @@ function doLogin() {
         err.style.display = 'none';
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
+        loadUnreadNotificationDots();
         
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
@@ -300,7 +304,11 @@ function renderAnnouncementList(announcements, type = '') {
         const displayContent = formatAnnouncementContent(parsed.content);
 
         return `
-            <div class="announce-item">
+            <div class="announce-item"
+                 data-notification-id="${escapeHtml(announcement.notification_id)}"
+                 data-course-id="${escapeHtml(announcement.course_id)}"
+                 data-notification-type="${escapeHtml(announcement.type || '')}"
+                 onclick="markNotificationRead('${escapeHtml(announcement.notification_id)}', '${escapeHtml(announcement.course_id)}', this)">
                 <div class="announce-dot"></div>
                 <div class="announce-content">
                     <div class="announce-course">${escapeHtml(courseName)}</div>
@@ -314,6 +322,46 @@ function renderAnnouncementList(announcements, type = '') {
 
     // 反轉 HTML 片段以確保最新公告顯示在最上方
     container.innerHTML = htmlPieces.reverse().join('');
+}
+
+async function loadUnreadNotificationDots() {
+    try {
+        const response = await fetch('/api/notifications/unread');
+        if (!response.ok) return;
+        const unread = await response.json();
+        applyUnreadNotificationDots(unread);
+    } catch (error) {
+        console.error('載入未讀通知失敗:', error);
+    }
+}
+
+function applyUnreadNotificationDots(unread) {
+    document.querySelectorAll('[data-notification-dot]').forEach(dot => {
+        const category = dot.dataset.notificationDot;
+        dot.classList.toggle('show', Boolean(unread[category]));
+    });
+}
+
+async function markNotificationRead(notificationId, courseId, item) {
+    if (!notificationId) return;
+
+    try {
+        const response = await fetch('/api/notifications/read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notification_id: notificationId, course_id: courseId })
+        });
+
+        if (!response.ok) {
+            throw new Error('標記已讀失敗');
+        }
+
+        const dot = item?.querySelector('.announce-dot');
+        if (dot) dot.classList.add('read');
+        await loadUnreadNotificationDots();
+    } catch (error) {
+        console.error('標記通知已讀失敗:', error);
+    }
 }
 
 // ========== 登出 ==========
@@ -526,6 +574,41 @@ function displayAnnouncementsByType(announcements) {
     const buckets = {};
     for (const announcement of sortedAnnouncements) {
         let type = announcement.type || '公告';
+<<<<<<< HEAD
+        
+        // 處理可能的類型名稱差異
+        if (type === '公告') type = '公告';
+        if (type === '一般公告') type = '公告';
+        
+        const containerId = typeMapping[type];
+        
+        if (containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                // 如果當前容器顯示的是「暫無公告」，清空它
+                if (container.innerHTML.includes('暫無此類型公告')) {
+                    container.innerHTML = '';
+                }
+                
+                // 新增公告卡片
+                const parsed = parseAnnouncementDisplay(announcement);
+                const announcementHtml = `
+                    <div class="announce-item"
+                         data-notification-id="${escapeHtml(announcement.notification_id)}"
+                         data-course-id="${escapeHtml(announcement.course_id)}"
+                         data-notification-type="${escapeHtml(announcement.type || '')}"
+                         onclick="markNotificationRead('${escapeHtml(announcement.notification_id)}', '${escapeHtml(announcement.course_id)}', this)">
+                        <div class="announce-dot"></div>
+                        <div class="announce-content">
+                            <div class="announce-title">${escapeHtml(parsed.title)}</div>
+                            <div class="announce-desc">${escapeHtml(parsed.content)}</div>
+                            <div class="announce-date">${announcement.due_date || '日期未定'}</div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += announcementHtml;
+            }
+=======
         let containerId = typeMapping[type];
 
         if (!containerId && announcement.information && announcement.information.includes('screego')) {
@@ -560,6 +643,7 @@ function displayAnnouncementsByType(announcements) {
             container.innerHTML = '<p style="color: #999;">暫無公告</p>';
         } else {
             container.innerHTML = pieces.reverse().join('');
+>>>>>>> origin/main
         }
     }
 }
@@ -602,6 +686,115 @@ function switchCourseTab(tabName, event) {
     }
 }
 
+<<<<<<< HEAD
+
+
+//通知按鈕狀態變化
+// ── 通知設定 ──
+const ALL_NOTIFICATION_TYPE = '全部通知';
+
+function getNotificationToggles() {
+  return Array.from(document.querySelectorAll('.notification-toggle'));
+}
+
+function getAllNotificationToggle() {
+  return document.querySelector('.toggle-all-notifications');
+}
+
+function getNotificationLabel(toggle) {
+  return toggle.closest('.settings-row')
+               .querySelector('.settings-label')
+               .childNodes[0].textContent.trim();
+}
+
+function setToggleState(toggle, isOn) {
+  toggle.classList.toggle('on', Boolean(isOn));
+}
+
+function saveNotificationSetting(type, isOn) {
+  return fetch('/api/notification_setting', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, notification_switch: Boolean(isOn) })
+  });
+}
+
+function toggleAllNotifications(el) {
+  const isOn = !el.classList.contains('on');
+  setToggleState(el, isOn);
+
+  const childToggles = getNotificationToggles();
+  childToggles.forEach(toggle => setToggleState(toggle, isOn));
+
+  const requests = [
+    saveNotificationSetting(ALL_NOTIFICATION_TYPE, isOn),
+    ...childToggles.map(toggle => saveNotificationSetting(getNotificationLabel(toggle), isOn))
+  ];
+
+  Promise.all(requests)
+    .then(() => loadUnreadNotificationDots())
+    .catch(err => console.error('儲存失敗', err));
+}
+
+
+function syncAllToggle(options = {}) {
+  const childToggles = getNotificationToggles();
+  const allToggle = getAllNotificationToggle();
+
+  if (!allToggle || childToggles.length === 0) return Promise.resolve(false);
+
+  const shouldBeOn = childToggles.every(toggle => toggle.classList.contains('on'));
+  const wasOn = allToggle.classList.contains('on');
+
+  setToggleState(allToggle, shouldBeOn);
+
+  if (options.persist && wasOn !== shouldBeOn) {
+    return saveNotificationSetting(ALL_NOTIFICATION_TYPE, shouldBeOn)
+      .then(() => true);
+  }
+
+  return Promise.resolve(wasOn !== shouldBeOn);
+}
+
+
+// 設定頁面顯示時載入通知設定
+function initNotificationSettings() {
+  fetch('/api/notification_setting')
+    .then(res => res.json())
+    .then(data => {
+      data.settings.forEach(setting => {
+        getNotificationToggles().forEach(toggle => {
+          const label = getNotificationLabel(toggle);
+          if (label === setting.type) {
+            setToggleState(toggle, setting.notification_switch);
+          }
+        });
+      });
+
+
+      syncAllToggle();
+
+
+      getNotificationToggles().forEach(toggle => {
+        if (toggle.dataset.notificationBound === 'true') return;
+        toggle.dataset.notificationBound = 'true';
+        toggle.addEventListener('click', function () {
+          const isOn = !toggle.classList.contains('on');
+          setToggleState(toggle, isOn);
+
+          saveNotificationSetting(getNotificationLabel(toggle), isOn)
+            .then(() => {
+              return syncAllToggle({ persist: true });
+            })
+            .then(() => {
+              return loadUnreadNotificationDots();
+            })
+            .catch(err => console.error('儲存失敗', err));
+        });
+      });
+    })
+    .catch(err => console.error('載入通知設定失敗', err));
+=======
 // 通知設定
 function toggleAllNotifications(el) {
     el.classList.toggle('on');
@@ -623,6 +816,7 @@ function toggleAllNotifications(el) {
             body: JSON.stringify({ type: label, notification_switch: isOn })
         }).catch(err => console.error('儲存失敗', err));
     });
+>>>>>>> origin/main
 }
 
 function syncAllToggle() {

@@ -30,6 +30,63 @@ def get_db():
     conn.commit()
     return conn
 
+<<<<<<< HEAD
+
+NOTIFICATION_CATEGORY_MAP = {
+    "assignment": {
+        "notification_types": ("作業通知",),
+        "setting_types": ("作業通知", "作業截止提醒"),
+    },
+    "exam": {
+        "notification_types": ("考試通知",),
+        "setting_types": ("考試通知",),
+    },
+    "discussion": {
+        "notification_types": ("討論區", "討論區通知"),
+        "setting_types": ("討論區", "討論區通知", "討論區回覆"),
+    },
+    "announcement": {
+        "notification_types": ("一般公告", "公告", "新公告通知"),
+        "setting_types": ("一般公告", "一般公告通知", "新公告通知"),
+    },
+}
+
+
+def ensure_notification_read_table(conn):
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS Notification_Read (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id CHAR(10) NOT NULL,
+            notification_id CHAR(10) NOT NULL,
+            course_id CHAR(10) NOT NULL,
+            read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(student_id, notification_id, course_id),
+            FOREIGN KEY (student_id) REFERENCES Student(student_id)
+                ON DELETE CASCADE ON UPDATE CASCADE,
+            FOREIGN KEY (notification_id, course_id) REFERENCES Notification(notification_id, course_id)
+                ON DELETE CASCADE ON UPDATE CASCADE
+        )
+    """)
+
+
+def placeholders(values):
+    return ",".join(["?"] * len(values))
+
+
+def is_notification_type_enabled(cursor, student_id, setting_types):
+    cursor.execute(f"""
+        SELECT notification_switch
+        FROM Setting
+        WHERE student_id = ?
+          AND type IN ({placeholders(setting_types)})
+        LIMIT 1
+    """, (student_id, *setting_types))
+    setting = cursor.fetchone()
+    return True if setting is None else bool(setting["notification_switch"])
+
+# 首頁 - 導向登入頁
+=======
+>>>>>>> origin/main
 @app.route("/")
 def courses():
     return render_template("login.html")
@@ -477,7 +534,7 @@ def get_course_detail(course_id):
         return jsonify({"error": "Course not found"}), 404
 
     cursor.execute("""
-        SELECT notification_id, information, due_date, type
+        SELECT notification_id, course_id, information, due_date, type
         FROM Notification
         WHERE course_id = ?
         ORDER BY due_date DESC
@@ -715,15 +772,109 @@ def update_notification_setting():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE Setting
-        SET notification_switch = ?
-        WHERE student_id = ? AND type = ?
-    """, (switch, session["user_id"], notification_type))
+        INSERT INTO Setting (student_id, notification_switch, type)
+        VALUES (?, ?, ?)
+        ON CONFLICT(type, student_id)
+        DO UPDATE SET notification_switch = excluded.notification_switch
+    """, (session["user_id"], switch, notification_type))
     conn.commit()
     conn.close()
 
     return jsonify({"success": True})
 
+<<<<<<< HEAD
+
+@app.route("/api/notifications/unread", methods=["GET"])
+def get_unread_notifications():
+    if "user_id" not in session or session["role"] != "student":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    student_id = session["user_id"]
+    unread = {category: False for category in NOTIFICATION_CATEGORY_MAP}
+
+    conn = get_db()
+    ensure_notification_read_table(conn)
+    cursor = conn.cursor()
+
+    for category, config in NOTIFICATION_CATEGORY_MAP.items():
+        if not is_notification_type_enabled(cursor, student_id, config["setting_types"]):
+            continue
+
+        notification_types = config["notification_types"]
+        cursor.execute(f"""
+            SELECT 1
+            FROM Notification n
+            JOIN Enrolls e
+              ON e.course_id = n.course_id
+             AND e.student_id = ?
+            LEFT JOIN Notification_Read nr
+              ON nr.student_id = ?
+             AND nr.notification_id = n.notification_id
+             AND nr.course_id = n.course_id
+            WHERE n.type IN ({placeholders(notification_types)})
+              AND nr.id IS NULL
+            LIMIT 1
+        """, (student_id, student_id, *notification_types))
+        unread[category] = cursor.fetchone() is not None
+
+    conn.commit()
+    conn.close()
+    return jsonify(unread)
+
+
+@app.route("/api/notifications/read", methods=["POST"])
+def mark_notification_read():
+    if "user_id" not in session or session["role"] != "student":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    notification_id = data.get("notification_id")
+    course_id = data.get("course_id")
+
+    if not notification_id:
+        return jsonify({"error": "Missing notification_id"}), 400
+
+    student_id = session["user_id"]
+    conn = get_db()
+    ensure_notification_read_table(conn)
+    cursor = conn.cursor()
+
+    params = [student_id, notification_id]
+    course_filter = ""
+    if course_id:
+        course_filter = "AND n.course_id = ?"
+        params.append(course_id)
+
+    cursor.execute(f"""
+        SELECT n.notification_id, n.course_id
+        FROM Notification n
+        JOIN Enrolls e
+          ON e.course_id = n.course_id
+         AND e.student_id = ?
+        WHERE n.notification_id = ?
+        {course_filter}
+    """, params)
+    notifications = cursor.fetchall()
+
+    if not notifications:
+        conn.close()
+        return jsonify({"error": "Notification not found or permission denied"}), 404
+
+    for notification in notifications:
+        cursor.execute("""
+            INSERT INTO Notification_Read (student_id, notification_id, course_id, read_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(student_id, notification_id, course_id)
+            DO UPDATE SET read_at = excluded.read_at
+        """, (student_id, notification["notification_id"], notification["course_id"]))
+
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
+
+=======
+>>>>>>> origin/main
 @app.route("/api/check_setting")
 def check_setting():
     if "user_id" not in session:
