@@ -188,10 +188,6 @@ function goPage(name) {
     }
     
     if (name === 'announcements') {
-        setTimeout(() => loadAllAnnouncements(), 50);
-    }
-
-    if (name === 'announcements') {
         setTimeout(() => {
             loadAnnouncements(currentAnnouncementType);
         }, 50);
