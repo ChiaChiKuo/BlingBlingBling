@@ -3,11 +3,16 @@ function initializeApp() {
     if (isLoggedIn) {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
-        
+
+        goPage('courses'); // ⭐⭐⭐ 加這行
+
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'page-courses') {
                 loadCourses();
+            }
+            if (activePage && activePage.id === 'page-announcements') {
+                loadAllAnnouncements();
             }
         }, 100);
     } else {
@@ -15,6 +20,7 @@ function initializeApp() {
         document.getElementById('app-page').style.display = 'none';
     }
 }
+
 
 // ========== 登入 ==========
 function doLogin() {
@@ -97,38 +103,23 @@ function displayCourses(courses) {
     const container = document.getElementById('courses-container');
     
     if (!container) return;
-    
     if (courses.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">📖</span>
-                <p>您目前沒有教授任何課程</p>
-                <button class="browse-btn" onclick="showToast('開課功能開發中')">開設新課程</button>
-            </div>
-        `;
+        container.innerHTML = `<div class="empty-state"><span>📚</span><p>您目前沒有教授任何課程</p></div>`;
         return;
     }
-    
+
     container.innerHTML = '';
-    
     const colors = ['#e0f7fa', '#fff8e1', '#f3e5f5', '#e8f5e9', '#fce4ec', '#ede7f6'];
-    
     courses.forEach((course, index) => {
         const card = document.createElement('div');
         card.className = 'course-card';
         card.onclick = () => viewCourseDetail(course.course_id);
-        
         card.innerHTML = `
-            <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">
-                📚
-            </div>
+            <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">📚</div>
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
                 <div class="course-dept">課程代碼：${escapeHtml(course.course_id)}</div>
-                <div class="course-stats">
-                    <span>📖 ${course.credits || 3} 學分</span>
-                    <span>👥 管理</span>
-                </div>
+                <div class="course-stats"><span>📖 ${course.credits || 3} 學分</span><span>👥 ${course.student_count || 0} 人</span></div>
             </div>
         `;
         container.appendChild(card);
@@ -136,7 +127,7 @@ function displayCourses(courses) {
 }
 
 // ========== 頁面切換 ==========
-const pages = ['home', 'courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings', 'course-detail'];
+const pages = ['courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings', 'course-detail'];
 
 function goPage(name) {
     pages.forEach(p => {
@@ -147,7 +138,7 @@ function goPage(name) {
     const targetPage = document.getElementById('page-' + name);
     if (targetPage) targetPage.classList.add('active');
     
-    const navItems = ['home', 'courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings'];
+    const navItems = ['courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings'];
     navItems.forEach(p => {
         const nav = document.getElementById('nav-' + p);
         if (nav) nav.classList.remove('active');
@@ -277,7 +268,107 @@ function displayCourseDetail(data) {
     document.getElementById('course-semester').textContent = course.semester || '114_2';
     document.getElementById('course-mode').textContent = course.is_online ? '線上課程' : '實體課程';
 
+    // 根據資料庫的 is_online 欄位判斷是否可直播（主要判斷方式）
+    // 如果 is_online 為 null/undefined，則回退到課程名稱檢查
+    let canLive = false;
+    
+    if (course.is_online !== null && course.is_online !== undefined) {
+        // 如果 is_online 有值，則直接使用
+        canLive = !!course.is_online;
+    } else {
+        // 備用方案：檢查課程名稱（以防 is_online 未被正確傳送）
+        const onlineCourseNames = ['資料庫管理', '管理資訊系統', '資料視覺化'];
+        canLive = onlineCourseNames.some(name => course.course_name.includes(name));
+    }
+    
+    // 顯示或隱藏課程名稱旁邊的按鈕
+    const liveBtn = document.getElementById('online-live-btn');
+    if (liveBtn) {
+        liveBtn.style.display = canLive ? 'inline-flex' : 'none';
+    }
+
     loadCategorizedAnnouncements(course.course_id);
+    loadCourseMaterials(course.course_id);
+}
+
+async function loadCourseMaterials(courseId) {
+    const container = document.getElementById('uploaded-materials-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="color: #999;">載入教材中...</p>';
+
+    try {
+        const response = await fetch(`/api/course/${courseId}`);
+        if (!response.ok) throw new Error('無法載入教材');
+
+        const data = await response.json();
+        const materials = data.materials || [];
+
+        if (!materials.length) {
+            container.innerHTML = '<p style="color: #999;">尚未上傳教材</p>';
+            return;
+        }
+
+        container.innerHTML = materials.map(mat => `
+            <div class="announce-item" style="padding: 12px;">
+                <div class="announce-content">
+                    <div class="announce-title">${escapeHtml(mat.filename)}</div>
+                    <div class="announce-desc" style="margin: 8px 0; color: #555;">上傳時間：${escapeHtml(mat.uploaded_at)}</div>
+                    <div class="announce-actions">
+                        ${mat.filename.toLowerCase().endsWith('.pdf') ? `
+                            <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 10px;">
+                                預覽 PDF
+                            </button>
+                        ` : ''}
+
+                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="margin-right: 10px; display: inline-flex; text-decoration: none;">
+                            下載
+                        </a>
+                        <button class="btn-primary" style="background:#e53935;" onclick="deleteCourseMaterial('${courseId}', '${mat.material_id}')">🗑️ 刪除</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('載入教材失敗:', error);
+        container.innerHTML = '<p style="color: #999;">教材載入失敗，請稍後再試。</p>';
+    }
+}
+
+async function uploadCourseMaterial() {
+    if (!currentCourseId) {
+        showToast('請先從「我的課程」進入課程頁面');
+        return;
+    }
+
+    const fileInput = document.getElementById('material-file');
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        showToast('請選擇要上傳的教材檔案');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('material', file);
+
+    try {
+        const response = await fetch(`/api/course/${currentCourseId}/materials`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || '上傳失敗');
+        }
+
+        showToast('教材已上傳');
+        fileInput.value = '';
+        loadCourseMaterials(currentCourseId);
+    } catch (error) {
+        console.error('上傳教材失敗:', error);
+        showToast('教材上傳失敗');
+    }
 }
 
 // 載入分類公告（教師端）
@@ -285,7 +376,13 @@ async function loadCategorizedAnnouncements(courseId) {
     try {
         const response = await fetch(`/api/course/${courseId}`);
         const data = await response.json();
-        const announcements = data.announcements || [];
+        const announcements = (data.announcements || []).slice().sort((a,b) => {
+            const da = a.due_date ? new Date(a.due_date).getTime() : 0;
+            const db = b.due_date ? new Date(b.due_date).getTime() : 0;
+            if (db !== da) return db - da;
+            if (a.notification_id && b.notification_id) return b.notification_id.localeCompare(a.notification_id);
+            return 0;
+        });
         
         const categories = {
             general: [],
@@ -314,7 +411,7 @@ async function loadCategorizedAnnouncements(courseId) {
         });
         
         for (const [cat, list] of Object.entries(categories)) {
-            const container = document.getElementById(`announcements-list-${cat}`);
+            const container = document.getElementById(`course-announcements-list-${cat}`);
             if (!container) continue;
             
             if (list.length === 0) {
@@ -406,6 +503,7 @@ async function publishCourseAnnouncement() {
             document.getElementById('publish-content').value = '';
             document.getElementById('publish-date').value = '';
             await loadCategorizedAnnouncements(currentCourseId);
+            setTimeout(() => location.reload(), 1500); 
         } else {
             showToast('發布失敗');
         }
@@ -444,6 +542,7 @@ function switchCourseTab(tabName, event) {
     // 隱藏所有內容區塊
     const allContents = [
         'course-overview',
+        'course-materials',
         'course-general',
         'course-homework',
         'course-exam',
@@ -462,6 +561,9 @@ function switchCourseTab(tabName, event) {
     switch(tabName) {
         case 'overview':
             document.getElementById('course-overview').style.display = 'block';
+            break;
+        case 'materials':
+            document.getElementById('course-materials').style.display = 'block';
             break;
         case 'general':
             document.getElementById('course-general').style.display = 'block';
@@ -557,6 +659,60 @@ function publishAnnouncement() {
 }
 
 // ========== 通用功能 ==========
+
+// ========== 更新個人資料 ==========
+async function updateProfile() {
+    const nameInput = document.getElementById('profile-name');
+    const emailInput = document.getElementById('profile-email');
+
+    if (!nameInput || !emailInput) {
+        return;
+    }
+
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+
+    if (!name || !email) {
+        showToast('Name and email are required.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Save failed.');
+        }
+
+        updateProfileDisplay(data.name || name);
+        showToast('Changes saved.');
+    } catch (error) {
+        showToast(error.message || 'Save failed.');
+    }
+}
+
+function updateProfileDisplay(name) {
+    const avatarName = document.querySelector('.avatar-name');
+    if (avatarName) {
+        avatarName.textContent = `${name} ▾`;
+    }
+
+    const profileName = document.querySelector('.profile-name');
+    if (profileName) {
+        profileName.textContent = name;
+    }
+
+    const avatarCircle = document.querySelector('.avatar-circle');
+    if (avatarCircle) {
+        avatarCircle.textContent = name ? name[0] : 'U';
+    }
+}
 
 function doLogout() {
     window.location.href = '/logout';
@@ -833,4 +989,121 @@ function confirmCreateRoom() {
         console.error('Error:', error);
         showToast('建立失敗，請稍後再試');
     });
+}
+
+
+
+// 從課程詳情頁發起線上課程（不需要選擇課程，直接用 currentCourseId）
+function createLiveRoomFromCourse() {
+    if (!currentCourseId) {
+        showToast('無法取得課程資訊');
+        return;
+    }
+    
+    showToast('正在建立線上課程房間...');
+    
+    fetch('/api/create_live_room', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ course_id: currentCourseId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.open(data.room_url, '_blank');
+            showToast('房間已建立！公告已發布，學生可從公告區加入');
+            // 刷新公告列表，讓學生立即看到
+            setTimeout(() => refreshAnnouncements(), 1000);
+        } else {
+            showToast('建立失敗：' + (data.error || '未知錯誤'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('建立失敗，請稍後再試');
+    });
+}
+function openPdfViewer(materialId, filename) {
+    const viewer = document.createElement('div');
+
+    viewer.style.position = 'fixed';
+    viewer.style.top = '0';
+    viewer.style.left = '0';
+    viewer.style.width = '100vw';
+    viewer.style.height = '100vh';
+    viewer.style.background = 'rgba(0,0,0,0.75)';
+    viewer.style.zIndex = '9999';
+
+    viewer.innerHTML = `
+        <div style="width:90%; height:90%; margin:3vh auto; background:white; border-radius:12px; overflow:hidden;">
+            <div style="height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; border-bottom:1px solid #ddd;">
+                <strong>${filename}</strong>
+                <button onclick="this.closest('div[style*=fixed]').remove()" style="font-size:20px; border:none; background:none; cursor:pointer;">✕</button>
+            </div>
+
+            <iframe
+                src="/materials/${materialId}/preview"
+                style="width:100%; height:calc(100% - 50px); border:none;">
+            </iframe>
+        </div>
+    `;
+
+    document.body.appendChild(viewer);
+}
+async function uploadCourseMaterial() {
+    if (!currentCourseId) {
+        showToast('請先從課程列表進入課程');
+        return;
+    }
+
+    const fileInput = document.getElementById('material-file');
+    const file = fileInput.files[0];
+    if (!file) {
+        showToast('請選擇要上傳的教材');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('material', file);
+
+    try {
+        const res = await fetch(`/api/course/${currentCourseId}/materials`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            showToast(`教材「${file.name}」上傳成功，已發送通知！`);
+            fileInput.value = '';
+            await loadCategorizedAnnouncements(currentCourseId);
+            setTimeout(() => location.reload(), 1500); 
+        } else {
+            showToast('上傳失敗：' + (result.error || ''));
+        }
+    } catch (error) {
+        console.error(error);
+        showToast('上傳失敗');
+    }
+}
+async function deleteCourseMaterial(courseId, materialId) {
+    if (!confirm('確定要刪除此教材並移除相關通知嗎？')) return;
+
+    try {
+        const res = await fetch(`/api/course/${courseId}/materials/${materialId}`, {
+            method: 'DELETE'
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('教材已刪除！');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('刪除失敗：' + (result.error || ''));
+        }
+    } catch (error) {
+        console.error(error);
+        showToast('刪除失敗');
+    }
 }

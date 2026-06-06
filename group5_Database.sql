@@ -35,7 +35,7 @@ CREATE TABLE Notification(
  course_id CHAR(10) NOT NULL,
  type VARCHAR,
  information VARCHAR,
- due_date DATE,
+ due_date DATE NOT NULL,
  PRIMARY KEY (notification_id, course_id),
  FOREIGN KEY (course_id) REFERENCES Course(course_id)
  ON DELETE CASCADE ON UPDATE CASCADE,
@@ -108,6 +108,16 @@ CREATE TABLE Material(
  FOREIGN KEY (module_id) REFERENCES Module(module_id)
  ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE TABLE CourseMaterial(
+ material_id CHAR(10) NOT NULL PRIMARY KEY,
+ course_id CHAR(10) NOT NULL,
+ filename VARCHAR NOT NULL,
+ stored_filename VARCHAR NOT NULL,
+ uploaded_at TEXT NOT NULL,
+ uploaded_by CHAR(10) NOT NULL,
+ FOREIGN KEY (course_id) REFERENCES Course(course_id)
+ ON DELETE CASCADE ON UPDATE CASCADE
+);
 INSERT INTO Student VALUES ('B0111111111','Amy','B011111111@nsysu.student.edu.tw','Amy111');
 INSERT INTO Student VALUES ('B0111111112','Andy','B011111112@nsysu.student.edu.tw','Andy112');
 INSERT INTO Teacher VALUES ('T123456789','pclo','T123456789@nsysu.student.edu.tw','T12345pclo');
@@ -140,3 +150,10 @@ INSERT INTO Setting VALUES ('B0111111112', TRUE, '考試通知');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '課程異動通知');
 INSERT INTO Setting VALUES ('B0111111112', FALSE, '討論區回覆');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '成績公告');
+
+INSERT INTO Notification VALUES ('T192837465', 'a', 'MIS304', '一般公告', '大家都A+', '2026-06-11');
+INSERT INTO Notification VALUES ('T192837465', 'b', 'MIS304', '作業通知', '作業作業', '2026-06-07');
+INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', '考試通知', '期末考爆爆王', '2026-06-03');
+INSERT INTO Notification VALUES ('T123456789', 'd', 'MIS205', '課程異動通知', '期末報告取消~~好ㄝ', '2026-06-10');
+INSERT INTO Notification VALUES ('T192837465', 'e', 'MIS205', '討論區', 'Do you like coding?', '2026-06-10');
+

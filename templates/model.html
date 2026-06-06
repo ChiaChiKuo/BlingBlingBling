@@ -79,7 +79,7 @@
     </div>
     <div class="nav-logo-img">🎓</div>
     <span class="nav-school">國立中山大學</span>
-    <span class="nav-link" onclick="goPage('home')">發現課程</span>
+    <span class="nav-link" onclick="goPage('courses')">發現課程</span>
 
     <div class="nav-spacer"></div>
 
@@ -113,10 +113,6 @@
       </div>
 
       <div class="sidebar-section-title">我的學習</div>
-
-      <div class="sidebar-item active" id="nav-home" onclick="goPage('home')">
-        <span class="si-icon">🏠</span> 首頁
-      </div>
       <div class="sidebar-item" id="nav-courses" onclick="goPage('courses')">
         <span class="si-icon">📖</span> 我的課程
       </div>
@@ -160,137 +156,6 @@
 
     <!-- MAIN -->
     <main class="main-content">
-
-      <!-- HOME -->
-      <div class="page active" id="page-home">
-        <div class="home-feed">
-          <div class="feed-tabs">
-            <div class="feed-tab active">動態</div>
-            <div class="feed-tab" onclick="showToast('最新內容載入中...')">最新內容</div>
-          </div>
-
-          <!-- card 1 -->
-          <div class="feed-card">
-            <span class="feed-three-dots">···</span>
-            <div class="feed-card-header">
-              <div class="feed-icon">💬</div>
-              <div class="feed-meta">
-                <div class="feed-title">新文章</div>
-                <div class="feed-time">2026.05.15 17:40</div>
-              </div>
-            </div>
-            <div class="feed-body">
-              魏瑋珣 在課程 <span class="feed-link">管理資訊系統-MIS304</span>
-              的討論區 <span class="feed-link">5/14 課堂加分(5/16 23:59截止)</span> 中發布了新文章
-              <div class="highlight-box">
-                <strong>Group K</strong>
-                1.If NSYSU builds one super app for students, it must contain the following
-                functions to ensure the flexibility and retention，1) Digital ...
-              </div>
-            </div>
-          </div>
-
-          <!-- card 2 -->
-          <div class="feed-card">
-            <span class="feed-three-dots">···</span>
-            <div class="feed-card-header">
-              <div class="feed-icon">📣</div>
-              <div class="feed-meta">
-                <div class="feed-title">公告更新</div>
-                <div class="feed-time">2026.05.15 13:40</div>
-              </div>
-            </div>
-            <div class="feed-body">
-              課程 <span class="feed-link">資料視覺化-CSS137</span> 更新了公告
-              <div class="highlight-box">
-                <strong>期末分組報告名單</strong>
-                1.期末分組報告名單已經更新報告順序。2.另外如果有還未在分組名單上的同學，請私訊助教做更正。（助教信箱：m136070014@g-mail.nsysu.edu.tw）3.報告時間10分鐘、老師問答5分鐘。4.題目自選，並利用Power BI進行視覺化呈現。5.另外請各組組...
-              </div>
-            </div>
-          </div>
-
-          <!-- card 3 -->
-          <div class="feed-card">
-            <span class="feed-three-dots">···</span>
-            <div class="feed-card-header">
-              <div class="feed-icon">📋</div>
-              <div class="feed-meta">
-                <div class="feed-title">作業繳交提醒</div>
-                <div class="feed-time">2026.05.14 09:00</div>
-              </div>
-            </div>
-            <div class="feed-body">
-              課程 <span class="feed-link">資料庫管理-MIS205</span> 的作業「第五章 SQL查詢練習」截止日為 2026.05.17 23:59
-              <div class="highlight-box">
-                <strong>作業說明</strong>
-                請完成 Lab5 中所有 SQL 查詢題目，並上傳 .sql 檔案。注意：每題需要加上說明注釋，否則酌量扣分...
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT: recent visits -->
-        <div class="home-recent">
-          <div class="section-card">
-            <h3>🕐 最近造訪</h3>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">資料庫管理-MIS205</div>
-                <div class="recent-dept">資訊管理學系</div>
-              </div>
-              <div class="recent-score">2 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">倫理與社會責任的...</div>
-                <div class="recent-dept">管理學院</div>
-              </div>
-              <div class="recent-score">0 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">資料視覺化-CSS137</div>
-                <div class="recent-dept">社科院</div>
-              </div>
-              <div class="recent-score">0 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">管理資訊系統-MIS...</div>
-                <div class="recent-dept">資訊管理學系</div>
-              </div>
-              <div class="recent-score">2 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">📦</div>
-              <div class="recent-info">
-                <div class="recent-name">商事法-MIS206</div>
-                <div class="recent-dept">資訊管理學系</div>
-              </div>
-              <div class="recent-score">2 0</div>
-            </div>
-
-            <div class="recent-item" onclick="goPage('courses')">
-              <div class="recent-thumb">🎭</div>
-              <div class="recent-info">
-                <div class="recent-name">莎劇與文化詮釋-G...</div>
-                <div class="recent-dept">博雅向度一＜美學</div>
-              </div>
-              <div class="recent-score">0 0</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- COURSES -->
       <!-- COURSES -->
       <div class="page" id="page-courses">
@@ -310,9 +175,39 @@
         <div style="width:100%">
           <div class="page-header">
             <h2>公告</h2>
-            <p id="announcement-page-summary">載入公告中...</p>
+            <p id="announcement-count">載入中...</p>
           </div>
-          <div id="announcement-list" class="announce-list">
+          <div class="announce-list" id="announcements-list-general">
+            {% if notifications and notifications|length > 0 %}
+              {% for n in notifications %}
+              <div class="announce-item">
+                <div class="announce-dot"></div>
+                <div class="announce-content">
+                  <div class="announce-course">{{ n.course_name }}</div>
+                  <div class="announce-title">{{ n.information.split('\n')[0] if n.information else '公告' }}</div>
+                  <div class="announce-desc">
+                    {% set content = n.information.split('\n\n')[1:] | join('\n\n') if n.information else '' %}
+                    {% set room_url = None %}
+                    {% if 'https://app.screego.net/?room=' in content %}
+                      {% set after = content.split('https://app.screego.net/?room=')[1] %}
+                      {% set room_id = after.split()|first %}
+                      {% set room_url = 'https://app.screego.net/?room=' + room_id %}
+                    {% endif %}
+                    {% if room_url %}
+                      {{ content.replace(room_url, '<a href="' + room_url + '" target="_blank" style="color: #00bcd4; text-decoration: underline;">🔗 點此加入線上課程</a>')|safe }}
+                    {% else %}
+                      {{ content|safe }}
+                    {% endif %}
+                  </div>
+                  <div class="announce-date">{{ n.due_date or '日期未定' }}</div>
+                </div>
+              </div>
+              {% endfor %}
+              <script>document.getElementById('announcement-count').innerHTML = '共 {{ notifications|length }} 則公告';</script>
+            {% else %}
+              <p style="color: #999; text-align: center;">暫無公告</p>
+              <script>document.getElementById('announcement-count').innerHTML = '暫無公告';</script>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -321,27 +216,27 @@
       <div class="page" id="page-settings">
         <div style="width:100%">
           <div class="page-header">
-            <h2>設定</h2>
-            <p>管理您的帳號與偏好設定</p>
+            <h2>Settings</h2>
+            <p>Manage your account and preferences</p>
           </div>
           <div class="settings-wrap">
 
             <div class="settings-section">
-              <h3>個人資料</h3>
+              <h3>Profile</h3>
               <div class="settings-row">
-                <div class="settings-label">姓名<small>顯示於課程與討論中</small></div>
-                <input class="settings-input" value="{{ user_name or '使用者' }}">
+                <div class="settings-label">Name<small>Shown in courses and discussions</small></div>
+                <input class="settings-input" id="profile-name" value="{{ user_name or 'User' }}">
               </div>
               <div class="settings-row">
-                <div class="settings-label">學號<small>您的學校識別碼</small></div>
+                <div class="settings-label">Student ID<small>Your university ID</small></div>
                 <input class="settings-input" value="{{ user_id or '' }}" readonly style="background:#f5f5f5">
               </div>
               <div class="settings-row">
-                <div class="settings-label">電子郵件<small>接收通知與公告</small></div>
-                <input class="settings-input" value="b134020005@mail.nsysu.edu.tw">
+                <div class="settings-label">Email<small>Used for notifications and announcements</small></div>
+                <input class="settings-input" id="profile-email" value="{{ user_email or '' }}">
               </div>
               <div style="margin-top:16px;text-align:right">
-                <button class="btn-save" onclick="showToast('設定已儲存！')">儲存變更</button>
+                <button class="btn-save" onclick="updateProfile()">Save Changes</button>
               </div>
             </div>
 
@@ -418,6 +313,7 @@
           <!-- 課程內容標籤頁 -->
           <div class="course-tabs">
             <div class="course-tab active" onclick="switchCourseTab('overview', event)">課程概述</div>
+            <div class="course-tab" onclick="switchCourseTab('materials', event)">教材下載</div>
             <div class="course-tab" onclick="switchCourseTab('modules', event)">單元內容</div>
             <div class="course-tab" onclick="switchCourseTab('announcements', event)">一般公告<span class="notification-dot" data-notification-dot="announcement"></span></div>
             <div class="course-tab" onclick="switchCourseTab('homework', event)">作業通知<span class="notification-dot" data-notification-dot="assignment"></span></div>
@@ -449,6 +345,15 @@
             </div>
           </div>
 
+          <div id="course-materials" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>教材下載</h3>
+              <div id="course-materials-list" class="announce-list" style="margin-bottom: 0;">
+                <p style="color: #999;">載入教材中...</p>
+              </div>
+            </div>
+          </div>
+
           <!-- 單元內容 -->
           <div id="course-modules" class="course-tab-content" style="display: none;">
             <div class="settings-section">
@@ -463,8 +368,13 @@
           <!-- 一般公告 -->
           <div id="course-announcements" class="course-tab-content" style="display: none;">
             <div class="settings-section">
+<<<<<<< HEAD
               <h3>📢 一般公告<span class="notification-dot" data-notification-dot="announcement"></span></h3>
               <div id="announcements-list-general" class="announce-list">
+=======
+              <h3>📢 一般公告</h3>
+              <div id="course-announcements-list-general" class="announce-list">
+>>>>>>> origin/main
                 <p>載入中...</p>
               </div>
             </div>
@@ -473,8 +383,13 @@
           <!-- 作業通知 -->
           <div id="course-homework" class="course-tab-content" style="display: none;">
             <div class="settings-section">
+<<<<<<< HEAD
               <h3>📝 作業通知<span class="notification-dot" data-notification-dot="assignment"></span></h3>
               <div id="announcements-list-homework" class="announce-list">
+=======
+              <h3>📝 作業通知</h3>
+              <div id="course-announcements-list-homework" class="announce-list">
+>>>>>>> origin/main
                 <p>載入中...</p>
               </div>
             </div>
@@ -483,8 +398,13 @@
           <!-- 考試通知 -->
           <div id="course-exam" class="course-tab-content" style="display: none;">
             <div class="settings-section">
+<<<<<<< HEAD
               <h3>📋 考試通知<span class="notification-dot" data-notification-dot="exam"></span></h3>
               <div id="announcements-list-exam" class="announce-list">
+=======
+              <h3>📋 考試通知</h3>
+              <div id="course-announcements-list-exam" class="announce-list">
+>>>>>>> origin/main
                 <p>載入中...</p>
               </div>
             </div>
@@ -494,7 +414,7 @@
           <div id="course-courseChange" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>🔄 課程異動通知</h3>
-              <div id="announcements-list-courseChange" class="announce-list">
+              <div id="course-announcements-list-courseChange" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>
@@ -503,8 +423,13 @@
           <!-- 討論區 -->
           <div id="course-discussion" class="course-tab-content" style="display: none;">
             <div class="settings-section">
+<<<<<<< HEAD
               <h3>💬 討論區<span class="notification-dot" data-notification-dot="discussion"></span></h3>
               <div id="announcements-list-discussion" class="announce-list">
+=======
+              <h3>💬 討論區</h3>
+              <div id="course-announcements-list-discussion" class="announce-list">
+>>>>>>> origin/main
                 <p>載入中...</p>
               </div>
             </div>
@@ -514,7 +439,7 @@
           <div id="course-grade" class="course-tab-content" style="display: none;">
             <div class="settings-section">
               <h3>📊 成績公告</h3>
-              <div id="announcements-list-grade" class="announce-list">
+              <div id="course-announcements-list-grade" class="announce-list">
                 <p>載入中...</p>
               </div>
             </div>
