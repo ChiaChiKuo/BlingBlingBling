@@ -54,6 +54,18 @@ CREATE TABLE Receives(
  FOREIGN KEY (notification_id) REFERENCES Notification(notification_id)
  ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE TABLE Notification_Read(
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ student_id CHAR(10) NOT NULL,
+ notification_id CHAR(10) NOT NULL,
+ course_id CHAR(10) NOT NULL,
+ read_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ UNIQUE(student_id, notification_id, course_id),
+ FOREIGN KEY (student_id) REFERENCES Student(student_id)
+ ON DELETE CASCADE ON UPDATE CASCADE,
+ FOREIGN KEY (notification_id, course_id) REFERENCES Notification(notification_id, course_id)
+ ON DELETE CASCADE ON UPDATE CASCADE
+);
 CREATE TABLE Setting(
  student_id CHAR(10) NOT NULL,
  notification_switch BOOLEAN,

@@ -743,6 +743,21 @@
 
   .announce-dot.read { background: #ddd; }
 
+  .notification-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e53935;
+    display: none;
+    margin-left: 6px;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+
+  .notification-dot.show {
+    display: inline-block;
+  }
+
   .announce-content { flex: 1; }
   .announce-course { font-size: 11px; color: var(--teal); font-weight: 600; margin-bottom: 4px; }
   .announce-title  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
