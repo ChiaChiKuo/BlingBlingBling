@@ -324,6 +324,7 @@ async function loadCourseMaterials(courseId) {
                         <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="margin-right: 10px; display: inline-flex; text-decoration: none;">
                             下載
                         </a>
+                        <button class="btn-primary" style="background:#e53935;" onclick="deleteCourseMaterial('${courseId}', '${mat.material_id}')">🗑️ 刪除</button>
                     </div>
                 </div>
             </div>
@@ -502,6 +503,7 @@ async function publishCourseAnnouncement() {
             document.getElementById('publish-content').value = '';
             document.getElementById('publish-date').value = '';
             await loadCategorizedAnnouncements(currentCourseId);
+            setTimeout(() => location.reload(), 1500); 
         } else {
             showToast('發布失敗');
         }
@@ -1049,4 +1051,59 @@ function openPdfViewer(materialId, filename) {
     `;
 
     document.body.appendChild(viewer);
+}
+async function uploadCourseMaterial() {
+    if (!currentCourseId) {
+        showToast('請先從課程列表進入課程');
+        return;
+    }
+
+    const fileInput = document.getElementById('material-file');
+    const file = fileInput.files[0];
+    if (!file) {
+        showToast('請選擇要上傳的教材');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('material', file);
+
+    try {
+        const res = await fetch(`/api/course/${currentCourseId}/materials`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            showToast(`教材「${file.name}」上傳成功，已發送通知！`);
+            fileInput.value = '';
+            await loadCategorizedAnnouncements(currentCourseId);
+            setTimeout(() => location.reload(), 1500); 
+        } else {
+            showToast('上傳失敗：' + (result.error || ''));
+        }
+    } catch (error) {
+        console.error(error);
+        showToast('上傳失敗');
+    }
+}
+async function deleteCourseMaterial(courseId, materialId) {
+    if (!confirm('確定要刪除此教材並移除相關通知嗎？')) return;
+
+    try {
+        const res = await fetch(`/api/course/${courseId}/materials/${materialId}`, {
+            method: 'DELETE'
+        });
+        const result = await res.json();
+        if (result.success) {
+            showToast('教材已刪除！');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('刪除失敗：' + (result.error || ''));
+        }
+    } catch (error) {
+        console.error(error);
+        showToast('刪除失敗');
+    }
 }

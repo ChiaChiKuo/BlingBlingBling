@@ -14,7 +14,7 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads', 'materials')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def get_db():
-    conn = sqlite3.connect('project.db')
+    conn = sqlite3.connect(os.path.join(BASE_DIR, 'project.db'))
     conn.row_factory = sqlite3.Row
     conn.execute("""
         CREATE TABLE IF NOT EXISTS CourseMaterial(
@@ -27,6 +27,7 @@ def get_db():
             FOREIGN KEY (course_id) REFERENCES Course(course_id)
         )
     """)
+    conn.commit()
     return conn
 
 @app.route("/")
@@ -548,6 +549,18 @@ def get_course_materials(course_id):
             "INSERT INTO CourseMaterial (material_id, course_id, filename, stored_filename, uploaded_at, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)",
             (material_id, course_id, filename, stored_filename, uploaded_at, session["user_id"])
         )
+        notification_id = str(uuid.uuid4())[:8]
+        cursor.execute(
+            "INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date) VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                session["user_id"],
+                notification_id,
+                course_id,
+                '一般公告',
+                f'新教材上傳\n\n教材「{filename}」已上傳，請至課程教材區下載。',
+                time.strftime("%Y-%m-%d")
+            )
+        )
         conn.commit()
         conn.close()
 
@@ -799,6 +812,48 @@ def get_all_announcements():
 
     return jsonify({"announcements": [dict(a) for a in announcements]})
 
+@app.route("/api/course/<course_id>/materials/<material_id>", methods=["DELETE"])
+def delete_material(course_id, material_id):
+    if "user_id" not in session or session["role"] != "teacher":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # 確認是這個老師的課
+    cursor.execute("SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
+                   (session["user_id"], course_id))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({"error": "Unauthorized"}), 403
+
+    # 取得檔案資訊
+    cursor.execute("SELECT stored_filename FROM CourseMaterial WHERE material_id = ? AND course_id = ?",
+                   (material_id, course_id))
+    mat = cursor.fetchone()
+    if not mat:
+        conn.close()
+        return jsonify({"error": "Not found"}), 404
+
+    # 刪除實體檔案
+    file_path = os.path.join(UPLOAD_FOLDER, course_id, mat["stored_filename"])
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # 刪除資料庫紀錄
+    cursor.execute("DELETE FROM CourseMaterial WHERE material_id = ?", (material_id,))
+
+    # 刪除對應通知
+    cursor.execute("""
+        DELETE FROM Notification 
+        WHERE course_id = ? AND type = '一般公告' 
+        AND information LIKE ?
+    """, (course_id, f'%{mat["stored_filename"].split("_", 1)[-1]}%'))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"success": True})
 
 if __name__ == "__main__":
     app.run(debug=True)

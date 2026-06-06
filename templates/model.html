@@ -178,6 +178,9 @@
             <p id="announcement-count">載入中...</p>
           </div>
           <div class="announce-list" id="announcements-list-general">
+              <div class="loading-state">載入公告中...</div>
+            </div>
+          <div class="announce-list" id="announcements-list-general">
             {% if notifications and notifications|length > 0 %}
               {% for n in notifications %}
               <div class="announce-item">
