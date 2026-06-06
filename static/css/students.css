@@ -1092,3 +1092,20 @@
     background: #3498db;
     color: white;
 }
+.btn-primary{
+    background: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.2s;
+}
+
+.btn-primary:hover{
+    background: #1976d2;
+}
