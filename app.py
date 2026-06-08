@@ -47,6 +47,14 @@ NOTIFICATION_CATEGORY_MAP = {
         "notification_types": ("一般公告", "公告", "新公告通知"),
         "setting_types": ("一般公告", "一般公告通知", "新公告通知"),
     },
+    "courses_change": {
+        "notification_types": ("課程異動通知",),
+        "setting_types": ("課程異動通知"),
+    },
+    "scores": {
+        "notification_types": ("成績公告",),
+        "setting_types": ("成績公告"),
+    },
 }
 
 

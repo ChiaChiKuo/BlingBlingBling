@@ -141,19 +141,17 @@ INSERT INTO Setting VALUES ('B0111111111', TRUE, '新公告通知');
 INSERT INTO Setting VALUES ('B0111111111', TRUE, '作業截止提醒');
 INSERT INTO Setting VALUES ('B0111111111', TRUE, '考試通知');
 INSERT INTO Setting VALUES ('B0111111111', TRUE, '課程異動通知');
-INSERT INTO Setting VALUES ('B0111111111', FALSE, '討論區回覆');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, '討論區回覆');
 INSERT INTO Setting VALUES ('B0111111111', TRUE, '成績公告');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '全部通知');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '新公告通知');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '作業截止提醒');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '考試通知');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '課程異動通知');
-INSERT INTO Setting VALUES ('B0111111112', FALSE, '討論區回覆');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, '討論區回覆');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '成績公告');
 
 INSERT INTO Notification VALUES ('T192837465', 'a', 'MIS304', '一般公告', '大家都A+', '2026-06-11');
 INSERT INTO Notification VALUES ('T192837465', 'b', 'MIS304', '作業通知', '作業作業', '2026-06-07');
 INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', '考試通知', '期末考爆爆王', '2026-06-03');
-INSERT INTO Notification VALUES ('T123456789', 'd', 'MIS205', '課程異動通知', '期末報告取消~~好ㄝ', '2026-06-10');
-INSERT INTO Notification VALUES ('T192837465', 'e', 'MIS205', '討論區', 'Do you like coding?', '2026-06-10');
-
+INSERT INTO Notification VALUES ('T192837465', 'd', 'MIS205', '討論區', 'Do you like coding?', '2026-06-10');
