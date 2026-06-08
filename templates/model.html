@@ -79,7 +79,7 @@
     </div>
     <div class="nav-logo-img">🎓</div>
     <span class="nav-school">國立中山大學</span>
-    <span class="nav-link" onclick="goPage('courses')">發現課程</span>
+    
 
     <div class="nav-spacer"></div>
 
@@ -89,11 +89,7 @@
           📅
         </a>
       </div>
-      <div class="nav-icon-btn" title="通知">
-        🔔
-        <span class="notif-badge">92</span>
-      </div>
-      <div class="nav-icon-btn" title="說明">❓</div>
+      
 
       <div class="nav-avatar" onclick="goPage('settings')">
         <div class="avatar-circle">{{ user_name[0] if user_name else '用' }}</div>
@@ -129,20 +125,7 @@
         <div class="sidebar-subitem" id="nav-announcements-grade" onclick="goAnnouncementCategory('成績公告')">成績公告</div>
       </div>
 
-      <div class="sidebar-section-title">我的資源</div>
-
-      <div class="sidebar-item" onclick="showToast('檔案功能開啟中...')">
-        <span class="si-icon">📄</span> 檔案
-      </div>
-      <div class="sidebar-item" onclick="showToast('互動教材開啟中...')">
-        <span class="si-icon">🎮</span> 互動教材
-      </div>
-      <div class="sidebar-item" onclick="showToast('個人題庫開啟中...')">
-        <span class="si-icon">📝</span> 個人題庫
-      </div>
-      <div class="sidebar-item" onclick="showToast('評分標準開啟中...')">
-        <span class="si-icon">📊</span> Rubrics
-      </div>
+      
 
       <div class="sidebar-section-title">帳號</div>
 
@@ -244,56 +227,42 @@
   <h3>通知設定</h3>
 
   <div class="settings-row">
-    <div class="settings-label">全部通知<small>開啟或關閉所有通知</small></div>
+    <div class="settings-label">全部通知</div>
     <div class="toggle toggle-all-notifications on" onclick="toggleAllNotifications(this)"></div>
   </div>
 
   <div class="settings-row">
-    <div class="settings-label">新公告通知<small>課程有新公告時通知我</small></div>
+    <div class="settings-label">一般公告</div>
     <div class="toggle notification-toggle on"></div>
   </div>
 
   <div class="settings-row">
-    <div class="settings-label">作業截止提醒<small>作業截止前 24 小時通知</small></div>
+    <div class="settings-label">作業通知</div>
     <div class="toggle notification-toggle on"></div>
   </div>
 
   <div class="settings-row">
-    <div class="settings-label">考試通知<small>考試前提醒我</small></div>
+    <div class="settings-label">考試通知</div>
     <div class="toggle notification-toggle on"></div>
   </div>
 
   <div class="settings-row">
-    <div class="settings-label">課程異動通知<small>課程時間或地點變更時通知我</small></div>
+    <div class="settings-label">課程異動通知</div>
     <div class="toggle notification-toggle on"></div>
   </div>
 
   <div class="settings-row">
-    <div class="settings-label">討論區回覆<small>有人回覆我的討論文章</small></div>
+    <div class="settings-label">討論區</div>
     <div class="toggle notification-toggle"></div>
   </div>
 
   <div class="settings-row">
-    <div class="settings-label">成績公告<small>成績更新時通知我</small></div>
+    <div class="settings-label">成績公告</div>
     <div class="toggle notification-toggle on"></div>
   </div>
 </div>
 
-            <div class="settings-section">
-              <h3>外觀與語言</h3>
-              <div class="settings-row">
-                <div class="settings-label">介面語言</div>
-                <select class="settings-input" style="width:160px">
-                  <option>繁體中文</option>
-                  <option>English</option>
-                  <option>简体中文</option>
-                </select>
-              </div>
-              <div class="settings-row">
-                <div class="settings-label">深色模式<small>切換深色介面</small></div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-            </div>
+            
 
           </div>
         </div>
