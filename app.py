@@ -33,7 +33,7 @@ def get_db():
 NOTIFICATION_CATEGORY_MAP = {
     "assignment": {
         "notification_types": ("作業通知",),
-        "setting_types": ("作業通知", "作業截止提醒"),
+        "setting_types": ("作業通知",),
     },
     "exam": {
         "notification_types": ("考試通知",),
