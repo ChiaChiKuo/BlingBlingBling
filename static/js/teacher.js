@@ -43,15 +43,15 @@ function doLogin() {
     })
     .then(response => response.text())
     .then(html => {
-        if (html.includes('login-error') || html.includes('帳號或密碼錯誤')) {
-            err.style.display = 'block';
-        } else {
-            err.style.display = 'none';
-            location.reload();
-        }
-    })
+    if (html.includes('login-error') || html.includes('Incorrect account or password')) {
+        err.style.display = 'block';
+    } else {
+        err.style.display = 'none';
+        location.reload();
+    }
+})
     .catch(err => {
-        console.error('登入錯誤:', err);
+        console.error('Login error:', err);
         document.getElementById('login-error').style.display = 'block';
     });
 }
@@ -74,14 +74,14 @@ async function loadCourses() {
         const response = await fetch('/api/my_courses');
         
         if (!response.ok) {
-            throw new Error('載入課程失敗');
+            throw new Error('Failed to load courses.');
         }
         
         const data = await response.json();
         const courses = data.courses || [];
         
         if (countElem) {
-            countElem.textContent = `您目前教授 ${courses.length} 門課程`;
+            countElem.textContent = `You are teaching ${courses.length} courses`;
         }
         
         displayCourses(courses);
@@ -92,7 +92,7 @@ async function loadCourses() {
             <div class="error-state">
                 <span class="error-icon">⚠️</span>
                 <p>${error.message}</p>
-                <button class="retry-btn" onclick="loadCourses()">重新載入</button>
+                <button class="retry-btn" onclick="loadCourses()">Reload</button>
             </div>
         `;
     }
@@ -104,7 +104,7 @@ function displayCourses(courses) {
     
     if (!container) return;
     if (courses.length === 0) {
-        container.innerHTML = `<div class="empty-state"><span>📚</span><p>您目前沒有教授任何課程</p></div>`;
+        container.innerHTML = `<div class="empty-state"><span>📚</span><p>You are not teaching any courses yet</p></div>`;
         return;
     }
 
@@ -118,8 +118,8 @@ function displayCourses(courses) {
             <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">📚</div>
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
-                <div class="course-dept">課程代碼：${escapeHtml(course.course_id)}</div>
-                <div class="course-stats"><span>📖 ${course.credits || 3} 學分</span><span>👥 ${course.student_count || 0} 人</span></div>
+                <div class="course-dept">Course Code:${escapeHtml(course.course_id)}</div>
+                <div class="course-stats"><span>📖 ${course.credits || 3} Credits</span><span>👥 ${course.student_count || 0} Students</span></div>
             </div>
         `;
         container.appendChild(card);
@@ -165,33 +165,33 @@ async function loadTeacherAnnouncementType(pageName, type, title) {
 
     if (!list) return;
 
-    list.innerHTML = '<p style="color: #999;">載入公告中...</p>';
+    list.innerHTML = '<p style="color: #999;">Loading announcements...</p>';
     if (summary) summary.textContent = `載入${type}中...`;
 
     try {
         const response = await fetch(`/api/teacher/announcements?type=${encodeURIComponent(type)}`);
 
         if (!response.ok) {
-            throw new Error('公告載入失敗');
+            throw new Error('Failed to load announcements.');
         }
 
         const data = await response.json();
         renderTeacherAnnouncementList(list, summary, data.announcements || [], type, title);
     } catch (error) {
         console.error('公告載入失敗:', error);
-        list.innerHTML = '<p style="color: #999;">公告載入失敗</p>';
-        if (summary) summary.textContent = '公告載入失敗';
+        list.innerHTML = '<p style="color: #999;">Failed to load announcements.</p>';
+        if (summary) summary.textContent = 'Failed to load announcements.';
     }
 }
 
 function renderTeacherAnnouncementList(list, summary, announcements, type, title) {
     if (!announcements.length) {
-        list.innerHTML = '<p style="color: #999;">暫無公告</p>';
-        if (summary) summary.textContent = `已發布0則${type}`;
+        list.innerHTML = '<p style="color: #999;">No announcements available</p>';
+        if (summary) summary.textContent = `0 published`;
         return;
     }
 
-    if (summary) summary.textContent = `已發布${announcements.length}則${type}`;
+    if (summary) summary.textContent = `${announcements.length} published`;
 
     list.innerHTML = announcements.map(a => {
         const parsed = parseAnnouncementDisplay(a);
@@ -201,10 +201,10 @@ function renderTeacherAnnouncementList(list, summary, announcements, type, title
                 data-course-id="${a.course_id}">
                 <div class="announce-dot"></div>
                 <div class="announce-content">
-                    <div class="announce-course">課程名稱：${escapeHtml(a.course_name || a.course_id || '未指定課程')}</div>
-                    <div class="announce-title">公告標題：${escapeHtml(parsed.title)}</div>
-                    <div class="announce-desc">公告內容：${escapeHtml(parsed.content)}</div>
-                    <div class="announce-date">日期：${escapeHtml(a.due_date || '日期未定')}</div>
+                    <div class="announce-course">Course Name:${escapeHtml(a.course_name || a.course_id || 'Unspecified Course')}</div>
+                    <div class="announce-title">Announcement Title:${escapeHtml(parsed.title)}</div>
+                    <div class="announce-desc">Announcement Content:${escapeHtml(parsed.content)}</div>
+                    <div class="announce-date">Date:${escapeHtml(a.due_date || 'Date Not Specified')}</div>
                 </div>
             </div>
         `;
@@ -243,8 +243,8 @@ async function viewCourseDetail(courseId) {
         document.getElementById('course-description').innerHTML = `
             <div class="error-state">
                 <span class="error-icon">⚠️</span>
-                <p>載入失敗：${error.message}</p>
-                <button class="retry-btn" onclick="viewCourseDetail('${courseId}')">重新載入</button>
+                <p>Failed to load:${error.message}</p>
+                <button class="retry-btn" onclick="viewCourseDetail('${courseId}')">Reload</button>
             </div>
         `;
     }
@@ -261,12 +261,12 @@ function displayCourseDetail(data) {
     }
     
     document.getElementById('course-detail-title').textContent = course.course_name;
-    document.getElementById('course-detail-info').textContent = `課程代碼：${course.course_id}`;
-    document.getElementById('course-description').textContent = course.description || '暫無課程簡介';
-    document.getElementById('course-teachers').textContent = course.teachers || '未指定';
+    document.getElementById('course-detail-info').textContent = `Course Code:${course.course_id}`;
+    document.getElementById('course-description').textContent = course.description || 'No course description available';
+    document.getElementById('course-teachers').textContent = course.teachers || 'Not specified';
     document.getElementById('course-credits').textContent = course.credits || 3;
     document.getElementById('course-semester').textContent = course.semester || '114_2';
-    document.getElementById('course-mode').textContent = course.is_online ? '線上課程' : '實體課程';
+    document.getElementById('course-mode').textContent = course.is_online ? 'Online' : 'In-person';
 
     // 根據資料庫的 is_online 欄位判斷是否可直播（主要判斷方式）
     // 如果 is_online 為 null/undefined，則回退到課程名稱檢查
@@ -295,17 +295,17 @@ async function loadCourseMaterials(courseId) {
     const container = document.getElementById('uploaded-materials-list');
     if (!container) return;
 
-    container.innerHTML = '<p style="color: #999;">載入教材中...</p>';
+    container.innerHTML = '<p style="color: #999;">Loading materials...</p>';
 
     try {
         const response = await fetch(`/api/course/${courseId}`);
-        if (!response.ok) throw new Error('無法載入教材');
+        if (!response.ok) throw new Error('Failed to load materials.');
 
         const data = await response.json();
         const materials = data.materials || [];
 
         if (!materials.length) {
-            container.innerHTML = '<p style="color: #999;">尚未上傳教材</p>';
+            container.innerHTML = '<p style="color: #999;">No materials uploaded yet</p>';
             return;
         }
 
@@ -313,25 +313,25 @@ async function loadCourseMaterials(courseId) {
             <div class="announce-item" style="padding: 12px;">
                 <div class="announce-content">
                     <div class="announce-title">${escapeHtml(mat.filename)}</div>
-                    <div class="announce-desc" style="margin: 8px 0; color: #555;">上傳時間：${escapeHtml(mat.uploaded_at)}</div>
+                    <div class="announce-desc" style="margin: 8px 0; color: #555;">Upload Time:${escapeHtml(mat.uploaded_at)}</div>
                     <div class="announce-actions">
                         ${mat.filename.toLowerCase().endsWith('.pdf') ? `
                             <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 10px;">
-                                預覽 PDF
+                                Preview PDF
                             </button>
                         ` : ''}
 
                         <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="margin-right: 10px; display: inline-flex; text-decoration: none;">
-                            下載
+                            Download
                         </a>
-                        <button class="btn-primary" style="background:#e53935;" onclick="deleteCourseMaterial('${courseId}', '${mat.material_id}')">🗑️ 刪除</button>
+                        <button class="btn-primary" style="background:#e53935;" onclick="deleteCourseMaterial('${courseId}', '${mat.material_id}')">🗑️ Delete</button>
                     </div>
                 </div>
             </div>
         `).join('');
     } catch (error) {
         console.error('載入教材失敗:', error);
-        container.innerHTML = '<p style="color: #999;">教材載入失敗，請稍後再試。</p>';
+        container.innerHTML = '<p style="color: #999;">Failed to load materials. Please try again later.</p>';
     }
 }
 
@@ -415,7 +415,7 @@ async function loadCategorizedAnnouncements(courseId) {
             if (!container) continue;
             
             if (list.length === 0) {
-                container.innerHTML = '<p style="color: #999;">暫無公告</p>';
+                container.innerHTML = '<p style="color: #999;">No announcement yet</p>';
             }else{
             container.innerHTML = list.map(a => {
                 const parsed = parseAnnouncementDisplay(a);
@@ -427,10 +427,10 @@ async function loadCategorizedAnnouncements(courseId) {
                         <div class="announce-content">
                             <div class="announce-title">${escapeHtml(parsed.title)}</div>
                             <div class="announce-desc">${escapeHtml(parsed.content)}</div>
-                            <div class="announce-date">${a.due_date || '日期未定'}</div>
+                            <div class="announce-date">${a.due_date || 'Date Not Specified'}</div>
                             <div class="announce-actions">
-                                <button class="btn-edit-announcement">✏️ 編輯</button>
-                                <button class="btn-delete-announcement">🗑️ 刪除</button>
+                                <button class="btn-edit-announcement">✏️ Edit</button>
+                                <button class="btn-delete-announcement">🗑️ Delete</button>
                             </div>
                         </div>
                     </div>
@@ -622,7 +622,7 @@ function publishAnnouncement() {
     const date = document.getElementById('announce_date').value;
     
     if (!course_id) {
-        showToast('請選擇課程');
+        showToast('Select Course');
         return;
     }
     if (!content) {
@@ -797,8 +797,8 @@ function enterEditMode(item) {
     `;
 
     actions.innerHTML = `
-        <button class="btn-save-announcement">💾 儲存</button>
-        <button class="btn-cancel-announcement">取消</button>
+        <button class="btn-save-announcement">💾 Save</button>
+        <button class="btn-cancel-announcement">Cancel</button>
     `;
 }
 
@@ -811,7 +811,7 @@ async function saveAnnouncement(item) {
     const newDate = item.querySelector('.edit-announcement-date').value;
 
     if (!newTitle) {
-        showToast('公告標題不能空白');
+        showToast('Announcement title cannot be empty.');
         return;
     }
 
@@ -844,13 +844,13 @@ async function saveAnnouncement(item) {
         item.querySelector('.announce-date').textContent = newDate || '日期未定';
 
         item.querySelector('.announce-actions').innerHTML = `
-            <button class="btn-edit-announcement">✏️ 編輯</button>
-            <button class="btn-delete-announcement">🗑️ 刪除</button>
+            <button class="btn-edit-announcement">✏️ Edit</button>
+            <button class="btn-delete-announcement">🗑️ Delete</button>
         `;
 
-        showToast('公告已更新！');
+        showToast('Announcement updated!');
     } else {
-        showToast('更新失敗');
+        showToast('Update failed.');
     }
 }
 
@@ -868,13 +868,13 @@ function cancelEditMode(item) {
     item.querySelector('.announce-date').textContent = item.dataset.oldDate;
 
     item.querySelector('.announce-actions').innerHTML = `
-        <button class="btn-edit-announcement">✏️ 編輯</button>
-        <button class="btn-delete-announcement">🗑️ 刪除</button>
+        <button class="btn-edit-announcement">✏️ Edit</button>
+        <button class="btn-delete-announcement">🗑️ Delete</button>
     `;
 }
 
 async function deleteAnnouncement(item) {
-    const confirmed = confirm('確定要刪除這則公告嗎？');
+    const confirmed = confirm('Are you sure you want to delete this announcement?');
     if (!confirmed) return;
 
     const notificationId = item.dataset.notificationId;
@@ -888,9 +888,9 @@ async function deleteAnnouncement(item) {
 
     if (result.success) {
         item.remove();
-        showToast('公告已刪除！');
+        showToast('Announcement deleted!');
     } else {
-        showToast('刪除失敗');
+        showToast('Delete failed.');
     }
 
 }
@@ -900,7 +900,7 @@ let teacherCourses = [];
 
 // 發起線上課程
 function createLiveRoom() {
-    showToast('正在建立線上課程房間...');
+    showToast('Creating online class room...');
     
     fetch('/api/create_live_room', {
         method: 'POST',
@@ -918,14 +918,14 @@ function createLiveRoom() {
         } else if (data.success) {
             // 房間建立成功，自動開啟 Screego 畫面
             window.open(data.room_url, '_blank');
-            showToast('房間已建立！公告已發布，學生可從公告區加入');
+            showToast('Room created! The announcement has been published for students.');
         } else {
-            showToast('建立失敗：' + (data.error || '未知錯誤'));
+            showToast('Failed to create:' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('建立失敗，請稍後再試');
+        showToast('Failed to create. Please try again later.');
     });
 }
 
@@ -939,14 +939,14 @@ function showCourseSelectionDialog() {
     const dialogHtml = `
         <div id="courseDialog" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
             <div style="background: white; border-radius: 16px; padding: 24px; width: 350px;">
-                <h3 style="margin-bottom: 16px;">選擇課程</h3>
-                <p style="margin-bottom: 12px; color: #666;">請選擇要開直播的課程：</p>
+                <h3 style="margin-bottom: 16px;">Select Course</h3>
+                <p style="margin-bottom: 12px; color: #666;">Please select a course for the live session:</p>
                 <select id="courseSelect" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;">
                     ${courseOptions}
                 </select>
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                    <button onclick="closeDialog()" style="padding: 8px 16px; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">取消</button>
-                    <button onclick="confirmCreateRoom()" style="padding: 8px 16px; background: #00bcd4; color: white; border: none; border-radius: 6px; cursor: pointer;">確定開課</button>
+                    <button onclick="closeDialog()" style="padding: 8px 16px; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                    <button onclick="confirmCreateRoom()" style="padding: 8px 16px; background: #00bcd4; color: white; border: none; border-radius: 6px; cursor: pointer;">Start Class</button>
                 </div>
             </div>
         </div>
@@ -967,7 +967,7 @@ function confirmCreateRoom() {
     const course_id = courseSelect.value;
     
     closeDialog();
-    showToast('正在建立房間並發布公告...');
+    showToast('Creating room and publishing announcement...');
     
     fetch('/api/create_live_room', {
         method: 'POST',
@@ -980,14 +980,14 @@ function confirmCreateRoom() {
     .then(data => {
         if (data.success) {
             window.open(data.room_url, '_blank');
-            showToast('房間已建立！公告已發布，學生可從公告區加入');
+            showToast('Room created! The announcement has been published for students.');
         } else {
-            showToast('建立失敗：' + (data.error || '未知錯誤'));
+            showToast('Failed to create:' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('建立失敗，請稍後再試');
+        showToast('Failed to create. Please try again later.');
     });
 }
 
@@ -1013,16 +1013,16 @@ function createLiveRoomFromCourse() {
     .then(data => {
         if (data.success) {
             window.open(data.room_url, '_blank');
-            showToast('房間已建立！公告已發布，學生可從公告區加入');
+            showToast('Room created! The announcement has been published for students.');
             // 刷新公告列表，讓學生立即看到
             setTimeout(() => refreshAnnouncements(), 1000);
         } else {
-            showToast('建立失敗：' + (data.error || '未知錯誤'));
+            showToast('Failed to create:' + (data.error || 'Unknown error'));
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('建立失敗，請稍後再試');
+        showToast('Failed to create. Please try again later.');
     });
 }
 function openPdfViewer(materialId, filename) {
@@ -1054,14 +1054,14 @@ function openPdfViewer(materialId, filename) {
 }
 async function uploadCourseMaterial() {
     if (!currentCourseId) {
-        showToast('請先從課程列表進入課程');
+        showToast('Please enter a course from the course list first.');
         return;
     }
 
     const fileInput = document.getElementById('material-file');
     const file = fileInput.files[0];
     if (!file) {
-        showToast('請選擇要上傳的教材');
+        showToast('Please select a file to upload.');
         return;
     }
 
@@ -1076,20 +1076,20 @@ async function uploadCourseMaterial() {
 
         const result = await res.json();
         if (result.success) {
-            showToast(`教材「${file.name}」上傳成功，已發送通知！`);
+            showToast(`Material"「${file.name}」"uploaded successfully. Notification sent!`);
             fileInput.value = '';
             await loadCategorizedAnnouncements(currentCourseId);
             setTimeout(() => location.reload(), 1500); 
         } else {
-            showToast('上傳失敗：' + (result.error || ''));
+            showToast('Upload failed:' + (result.error || ''));
         }
     } catch (error) {
         console.error(error);
-        showToast('上傳失敗');
+        showToast('Upload failed.');
     }
 }
 async function deleteCourseMaterial(courseId, materialId) {
-    if (!confirm('確定要刪除此教材並移除相關通知嗎？')) return;
+    if (!confirm('Are you sure you want to delete this material and remove related notifications?')) return;
 
     try {
         const res = await fetch(`/api/course/${courseId}/materials/${materialId}`, {
@@ -1097,13 +1097,20 @@ async function deleteCourseMaterial(courseId, materialId) {
         });
         const result = await res.json();
         if (result.success) {
-            showToast('教材已刪除！');
+            showToast('Material deleted');
             setTimeout(() => location.reload(), 1500);
         } else {
-            showToast('刪除失敗：' + (result.error || ''));
+            showToast('Delete failed:' + (result.error || ''));
         }
     } catch (error) {
         console.error(error);
-        showToast('刪除失敗');
+        showToast('Delete failed:');
     }
+}
+function updateFileName(input) {
+    const fileName = input.files.length
+        ? input.files[0].name
+        : 'No file selected';
+
+    document.getElementById('selected-file-name').textContent = fileName;
 }

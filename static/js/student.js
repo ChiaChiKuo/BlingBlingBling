@@ -65,7 +65,7 @@ async function loadCourses() {
         const data = await response.json();
         const courses = data.courses || [];
         
-        if (countElem) countElem.textContent = `共 ${courses.length} 門課程`;
+        if (countElem) countElem.textContent = `${courses.length} Courses`;
         displayCourses(courses);
     } catch (error) {
         console.error('載入錯誤：', error);
@@ -94,7 +94,7 @@ function displayCourses(courses) {
             <div class="course-banner" style="background:${colors[index % colors.length]}; padding: 20px; text-align: center; font-size: 40px;">📚</div>
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
-                <div class="course-dept">課程代碼：${escapeHtml(course.course_id)}</div>
+                <div class="course-dept">Course Code:${escapeHtml(course.course_id)}</div>
                 <div class="course-stats"><span>📖 ${course.credits || 3} 學分</span><span>📅 ${course.semester || '進行中'}</span></div>
             </div>
         `;
@@ -133,7 +133,7 @@ async function loadAllAnnouncements() {
         }
         
         if (announcements.length === 0) {
-            container.innerHTML = '<p style="color: #999; text-align: center;">暫無公告</p>';
+            container.innerHTML = '<p style="color: #999; text-align: center;">No announcements</p>';
             return;
         }
         
@@ -151,7 +151,7 @@ async function loadAllAnnouncements() {
                         <div class="announce-course">${escapeHtml(n.course_name)}</div>
                         <div class="announce-title">${escapeHtml(title)}</div>
                         <div class="announce-desc">${displayContent}</div>
-                        <div class="announce-date">${n.due_date || '日期未定'}</div>
+                        <div class="announce-date">${n.due_date || 'Undetermined date'}</div>
                     </div>
                 </div>
             `;
@@ -289,7 +289,7 @@ function renderAnnouncementList(announcements, type = '') {
     announcements = (announcements || []).slice().sort(compareAnnouncementsDesc);
 
     if (!announcements.length) {
-        container.innerHTML = '<p style="color: #999;">暫無公告</p>';
+        container.innerHTML = '<p style="color: #999;">No announcements</p>';
         if (summary) summary.textContent = type ? `${type}：0 則` : '全部公告：0 則';
         return;
     }
@@ -497,7 +497,7 @@ function displayCourseDetail(data) {
     const modules = data.modules || [];
     
     document.getElementById('course-detail-title').textContent = course.course_name;
-    document.getElementById('course-detail-info').textContent = `課程代碼：${course.course_id}`;
+    document.getElementById('course-detail-info').textContent = `Course Code:${course.course_id}`;
     document.getElementById('course-description').textContent = course.description || '暫無課程簡介';
     document.getElementById('course-teachers').textContent = course.teachers || '未指定';
     document.getElementById('course-credits').textContent = course.credits || 3;
@@ -522,7 +522,7 @@ async function loadCourseMaterials(courseId) {
         const materials = data.materials || [];
 
         if (!materials.length) {
-            container.innerHTML = '<p style="color: #999;">目前尚無教材上傳</p>';
+            container.innerHTML = '<p style="color: #999;">No materials uploaded yet</p>';
             return;
         }
 
@@ -530,22 +530,22 @@ async function loadCourseMaterials(courseId) {
             <div class="announce-item" style="padding: 12px;">
                 <div class="announce-content">
                     <div class="announce-title">${escapeHtml(mat.filename)}</div>
-                    <div class="announce-desc" style="margin: 6px 0; color: #555;">上傳時間：${escapeHtml(mat.uploaded_at)}</div>
+                    <div class="announce-desc" style="margin: 6px 0; color: #555;">Upload Time:${escapeHtml(mat.uploaded_at)}</div>
                     ${mat.filename.toLowerCase().endsWith('.pdf') ? `
                         <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 8px;">
-                            預覽 PDF
+                            Preview PDF
                         </button>
                     ` : ''}
 
                     <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none; display: inline-flex;">
-                        下載教材
+                        Download Material
                     </a>
                 </div>
             </div>
         `).join('');
     } catch (error) {
         console.error('載入教材失敗:', error);
-        container.innerHTML = '<p style="color: #999;">教材載入失敗，請稍後再試</p>';
+        container.innerHTML = '<p style="color: #999;">Failed to load materials. Please try again later.</p>';
     }
 }
 
@@ -565,7 +565,7 @@ function displayAnnouncementsByType(announcements) {
     
     for (const containerId of Object.values(typeMapping)) {
         const container = document.getElementById(containerId);
-        if (container) container.innerHTML = '<p style="color: #999;">暫無此類型公告</p>';
+        if (container) container.innerHTML = '<p style="color: #999;">No announcements of this type</p>';
     }
     
     if (!sortedAnnouncements || sortedAnnouncements.length === 0) return;
@@ -598,7 +598,7 @@ function displayAnnouncementsByType(announcements) {
                 <div class="announce-content">
                     <div class="announce-title">${escapeHtml(title)}</div>
                     <div class="announce-desc">${displayContent}</div>
-                    <div class="announce-date">${announcement.due_date || '日期未定'}</div>
+                    <div class="announce-date">${announcement.due_date || 'Undetermined date'}</div>
                 </div>
             </div>
         `);
@@ -608,7 +608,7 @@ function displayAnnouncementsByType(announcements) {
         const container = document.getElementById(containerId);
         if (!container) continue;
         if (!pieces.length) {
-            container.innerHTML = '<p style="color: #999;">暫無公告</p>';
+            container.innerHTML = '<p style="color: #999;">No announcements</p>';
         } else {
             container.innerHTML = pieces.join('');
         }
@@ -620,7 +620,7 @@ function displayModules(modules) {
     if (!container) return;
     
     if (!modules || modules.length === 0) {
-        container.innerHTML = '<p style="color: #999;">暫無課程單元</p>';
+        container.innerHTML = '<p style="color: #999;">No announcements of this type</p>';
         return;
     }
     

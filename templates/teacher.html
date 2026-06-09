@@ -86,13 +86,13 @@
       <span></span><span></span><span></span><span></span>
     </div>
     <div class="nav-logo-img">🎓</div>
-    <span class="nav-school">國立中山大學 教師專區</span>
+    <span class="nav-school">National Sun Yat-sen University Teacher Portal</span>
     
 
     <div class="nav-spacer"></div>
 
     <div class="nav-right">
-      <div class="nav-icon-btn" title="行事曆">
+      <div class="nav-icon-btn" title="Calendar">
         <a href="/teacher/calendar">
           📅
         </a>
@@ -113,47 +113,47 @@
       <div class="sidebar-profile">
         <div class="profile-avatar">👤</div>
         <div class="profile-name">{{ user_name }}</div>
-        <div class="profile-role">👩‍🏫 教師</div>
+        <div class="profile-role">👩‍🏫 Teacher</div>
       </div>
 
-      <div class="sidebar-section-title">📚 教學管理</div>
+      <div class="sidebar-section-title">📚 Teaching Management</div>
 
       <div class="sidebar-item" id="nav-courses" onclick="goPage('courses')">
-        <span class="si-icon">📖</span> 我的課程
+        <span class="si-icon">📖</span> My Courses
       </div>
       <div class="sidebar-item" id="nav-announcements" onclick="goPage('announcements')">
-        <span class="si-icon">📢</span> 發布公告
+        <span class="si-icon">📢</span> Publish Announcements
       </div>
       <div class="sidebar-item" id="nav-students" onclick="goPage('students')">
-        <span class="si-icon">👥</span> 學生管理
+        <span class="si-icon">👥</span> Student Management
       </div>
-           <div class="sidebar-section-title">📊 評量與成績</div>
+           <div class="sidebar-section-title">📊 Assessment & Grades</div>
 
       <div class="sidebar-item" id="nav-grade-management" onclick="goTeacherAnnouncementType('grade-management', '成績公告', '成績管理')">
-        <span class="si-icon">📝</span> 成績管理
+        <span class="si-icon">📝</span> Grade Management
       </div>
       <div class="sidebar-item" id="nav-homework-management" onclick="goTeacherAnnouncementType('homework-management', '作業通知', '作業管理')">
-        <span class="si-icon">📋</span> 作業管理
+        <span class="si-icon">📋</span> Assignment Management
       </div>
-      <div class="sidebar-item" onclick="showToast('互動教材開啟中...')">
-        <span class="si-icon">🎮</span> 互動教材
+      <div class="sidebar-item" onclick="showToast('Opening interactive Materials...')">
+        <span class="si-icon">🎮</span> Interactive Materials
       </div>
-      <div class="sidebar-item" onclick="showToast('個人題庫開啟中...')">
-        <span class="si-icon">📝</span> 個人題庫
+      <div class="sidebar-item" onclick="showToast('Opening question Bank...')">
+        <span class="si-icon">📝</span> Question Bank
       </div>
-      <div class="sidebar-item" onclick="showToast('評分標準開啟中...')">
+      <div class="sidebar-item" onclick="showToast('Opening rubrics...')">
         <span class="si-icon">📊</span> Rubrics
       </div>
 
       
 
-      <div class="sidebar-section-title">帳號</div>
+      <div class="sidebar-section-title">Account</div>
 
       <div class="sidebar-item" id="nav-settings" onclick="goPage('settings')">
-        <span class="si-icon">⚙️</span> 設定
+        <span class="si-icon">⚙️</span> Settings
       </div>
       <div class="sidebar-item" onclick="doLogout()">
-        <span class="si-icon">🚪</span> 登出
+        <span class="si-icon">🚪</span> Logout
       </div>
     </aside>
 
@@ -163,47 +163,47 @@
       <!-- COURSES -->
       <div class="page" id="page-courses">
         <div class="page-header">
-          <h2>📖 我的課程</h2>
-          <p id="course-count">載入中...</p>
+          <h2>📖 My Courses</h2>
+          <p id="course-count">Loading...</p>
           
         </div>
         <div class="courses-grid" id="courses-container">
-          <div class="loading-state">載入課程中...</div>
+          <div class="loading-state">Loading courses...</div>
         </div>
       </div>
 
       <!-- ANNOUNCEMENTS -->
       <div class="page" id="page-announcements">
         <div class="page-header">
-          <h2>📢 發布公告</h2>
-          <p>向學生發布課程重要訊息</p>
+          <h2>📢 Publish Announcement</h2>
+          <p>Send important course announcements to students</p>
         </div>
         <div class="settings-wrap">
           <div class="settings-section">
-            <h3>新增公告</h3>
+            <h3>Create Announcement</h3>
             <select id="announce_course" class="settings-input" style="width:100%; margin-bottom: 16px;">
-              <option value="">選擇課程</option>
+              <option value="">Select Course</option>
               {% for course in courses %}
               <option value="{{ course.course_id }}">{{ course.course_name }}</option>
               {% endfor %}
             </select>
             <!-- 公告類型下拉選單 -->
             <select id="announce_type" class="settings-input" style="width:100%; margin-bottom: 16px;">
-              <option value="一般公告">📢 一般公告</option>
-              <option value="作業通知">📝 作業通知</option>
-              <option value="考試通知">📋 考試通知</option>
-              <option value="課程異動通知">🔄 課程異動通知</option>
-              <option value="討論區">💬 討論區</option>
-              <option value="成績公告">📊 成績公告</option>
+              <option value="一般公告">📢 General Announcement</option>
+              <option value="作業通知">📝 Assignment Notification</option>
+              <option value="考試通知">📋 Exam Notification</option>
+              <option value="課程異動通知">🔄 Course Change Notification</option>
+              <option value="討論區">💬 Discussion Board</option>
+              <option value="成績公告">📊 Grade Announcement</option>
             </select>
-            <input type="text" id="announce_title" placeholder="公告標題" class="settings-input" style="width:100%; margin-bottom: 16px;">
-            <textarea id="announce_content" placeholder="公告內容..." class="settings-input" style="width:100%; margin-bottom: 16px; min-height: 120px;"></textarea>
+            <input type="text" id="announce_title" placeholder="Announcement Title" class="settings-input" style="width:100%; margin-bottom: 16px;">
+            <textarea id="announce_content" placeholder="Announcement Content..." class="settings-input" style="width:100%; margin-bottom: 16px; min-height: 120px;"></textarea>
             <input type="date" id="announce_date" class="settings-input" style="width:100%; margin-bottom: 16px;">
-            <button class="btn-primary" onclick="publishAnnouncement()">📢 發布公告</button>
+            <button class="btn-primary" onclick="publishAnnouncement()">📢 Publish Announcement</button>
           </div>
 
           <div class="settings-section">
-            <h3>歷史公告</h3>
+            <h3>Announcement History</h3>
             <div class="announce-list">
               {% for n in notifications %}
              <div class="announce-item"
@@ -227,8 +227,8 @@
 </div>
 
         <div class="announce-actions">
-            <button class="btn-edit-announcement">✏️ 編輯</button>
-            <button class="btn-delete-announcement">🗑️ 刪除</button>
+            <button class="btn-edit-announcement">✏️ Edit</button>
+            <button class="btn-delete-announcement">🗑️ Delete</button>
         </div>
     </div>
 </div>
@@ -245,8 +245,8 @@
 <div class="page" id="page-grade-management">
   <div style="width:100%">
     <div class="page-header">
-      <h2>成績管理</h2>
-      <p id="grade-management-summary">已發布0則成績公告</p>
+      <h2>Grade Management</h2>
+      <p id="grade-management-summary">0 grade announcements published</p>
     </div>
     <div class="settings-wrap">
       <div class="settings-section">
@@ -260,7 +260,7 @@
 <div class="page" id="page-homework-management">
   <div style="width:100%">
     <div class="page-header">
-      <h2>作業管理</h2>
+      <h2>Assignment Management</h2>
       <p id="homework-management-summary">已發布0則作業通知</p>
     </div>
     <div class="settings-wrap">
@@ -274,20 +274,20 @@
 <!-- STUDENTS MANAGEMENT -->
 <div class="page" id="page-students">
   <div class="page-header">
-    <h2>👥 學生管理</h2>
-    <p>查看修課學生名單</p>
+    <h2>👥 Student Management</h2>
+    <p>View enrolled students</p>
   </div>
   <div class="settings-wrap">
     <div class="settings-section">
-      <h3>選擇課程</h3>
+      <h3>Select Course</h3>
       <select id="student_course" class="settings-input" onchange="loadStudents()" style="width:100%; margin-bottom: 20px;">
-        <option value="">請選擇課程</option>
+        <option value="">Please select a course</option>
         {% for course in courses %}
         <option value="{{ course.course_id }}">{{ course.course_name }}</option>
         {% endfor %}
       </select>
       <div id="student_list">
-        <p style="color: #999; text-align: center;">請選擇課程查看學生名單</p>
+        <p style="color: #999; text-align: center;">Please select a course to view the student list</p>
       </div>
     </div>
   </div>
@@ -338,61 +338,65 @@
             <!-- 返回按鈕 -->
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <button class="back-btn" onclick="goPage('courses')">← 返回我的課程</button>
+                <button class="back-btn" onclick="goPage('courses')">← Back to My Courses</button>
                 <div style="display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap;">
-                  <h2 id="course-detail-title" style="margin: 0;">課程名稱</h2>
+                  <h2 id="course-detail-title" style="margin: 0;">Course Name</h2>
                   <!-- 線上課程按鈕（只有指定課程才會顯示） -->
                   <button id="online-live-btn" class="btn-primary" onclick="createLiveRoomFromCourse()" style="background: #00bcd4; padding: 8px 20px; font-size: 14px; display: none;">
-                    📡 發起線上課程
+                    📡 Start Online Class
                   </button>
                 </div>
-                <p id="course-detail-info">載入中...</p>
+                <p id="course-detail-info">Loading...</p>
               </div>
             </div>
 
             <!-- 課程內容標籤頁 -->
             <div class="course-tabs">
-              <div class="course-tab active" onclick="switchCourseTab('overview', event)">課程概述</div>
-              <div class="course-tab" onclick="switchCourseTab('materials', event)">教材上傳</div>
-              <div class="course-tab" onclick="switchCourseTab('general', event)">一般公告</div>
-              <div class="course-tab" onclick="switchCourseTab('homework', event)">作業通知</div>
-              <div class="course-tab" onclick="switchCourseTab('exam', event)">考試通知</div>
-              <div class="course-tab" onclick="switchCourseTab('courseChange', event)">課程異動</div>
-              <div class="course-tab" onclick="switchCourseTab('discussion', event)">討論區</div>
-              <div class="course-tab" onclick="switchCourseTab('grade', event)">成績公告</div>
-              <div class="course-tab" onclick="switchCourseTab('publish', event)">發布公告</div>
+              <div class="course-tab active" onclick="switchCourseTab('overview', event)">Course Overview</div>
+              <div class="course-tab" onclick="switchCourseTab('materials', event)">Material Upload</div>
+              <div class="course-tab" onclick="switchCourseTab('general', event)">General Announcements</div>
+              <div class="course-tab" onclick="switchCourseTab('homework', event)">Assignment Notifications</div>
+              <div class="course-tab" onclick="switchCourseTab('exam', event)">Exam Notifications</div>
+              <div class="course-tab" onclick="switchCourseTab('courseChange', event)">Course Changes</div>
+              <div class="course-tab" onclick="switchCourseTab('discussion', event)">Discussion Board</div>
+              <div class="course-tab" onclick="switchCourseTab('grade', event)">Grade Announcements</div>
+              <div class="course-tab" onclick="switchCourseTab('publish', event)">Publish Announcement</div>
             </div>
 
             <!-- 課程概述 -->
             <div id="course-overview" class="course-tab-content active">
               <div class="settings-section">
-                <h3>課程簡介</h3>
-                <p id="course-description" style="line-height: 1.6; color: #555;">載入中...</p>
+                <h3>Course Description</h3>
+                <p id="course-description" style="line-height: 1.6; color: #555;">Loading...</p>
               </div>
 
               <div class="settings-section">
-                <h3>授課教師</h3>
-                <p id="course-teachers" style="color: #555;">載入中...</p>
+                <h3>Instructor</h3>
+                <p id="course-teachers" style="color: #555;">Loading...</p>
               </div>
 
               <div class="settings-section">
-                <h3>課程資訊</h3>
+                <h3>Course Information</h3>
                 <table style="width: 100%;">
-                  <tr><td style="padding: 8px 0;"><strong>學分數：</strong></td><td id="course-credits">-</td></tr>
-                  <tr><td style="padding: 8px 0;"><strong>學期：</strong></td><td id="course-semester">-</td></tr>
-                  <tr><td style="padding: 8px 0;"><strong>上課方式：</strong></td><td id="course-mode">-</td></tr>
+                  <tr><td style="padding: 8px 0;"><strong>Credits:</strong></td><td id="course-credits">-</td></tr>
+                  <tr><td style="padding: 8px 0;"><strong>Semester:</strong></td><td id="course-semester">-</td></tr>
+                  <tr><td style="padding: 8px 0;"><strong>Course Mode:</strong></td><td id="course-mode">-</td></tr>
                 </table>
               </div>
             </div>
 
             <div id="course-materials" class="course-tab-content" style="display: none;">
               <div class="settings-section">
-                <h3>教材上傳與管理</h3>
-                <p style="color: #555; margin-bottom: 12px;">請上傳此課程的教材，學生即可在「我的課程」下載。</p>
-                <input type="file" id="material-file" class="settings-input" style="width:100%; margin-bottom: 14px;">
-                <button class="btn-primary" style="margin-bottom: 20px;" onclick="uploadCourseMaterial()">上傳教材</button>
+                <h3>Material Upload & Management</h3>
+                <p style="color: #555; margin-bottom: 12px;">Upload course materials for students to download from "My Courses".</p>
+                <label for="material-file" class="btn-primary" style="display:inline-flex; margin-bottom: 10px;">
+  Choose File
+</label>
+<span id="selected-file-name" style="margin-left: 10px; color: #666;">No file selected</span>
+<input type="file" id="material-file" style="display:none;" onchange="updateFileName(this)">
+                <button class="btn-primary" style="margin-bottom: 20px;" onclick="uploadCourseMaterial()">Upload Material</button>
                 <div id="uploaded-materials-list" class="announce-list">
-                  <p style="color: #999;">載入教材中...</p>
+                  <p style="color: #999;">Loading materials...</p>
                 </div>
               </div>
             </div>
@@ -400,9 +404,9 @@
           <!-- 一般公告 -->
           <div id="course-general" class="course-tab-content" style="display: none;">
             <div class="settings-section">
-              <h3>一般公告</h3>
+              <h3>General Announcements</h3>
               <div id="course-announcements-list-general" class="announce-list">
-                <p>載入中...</p>
+                <p>Loading...</p>
               </div>
             </div>
           </div>
@@ -410,9 +414,9 @@
           <!-- 作業通知 -->
           <div id="course-homework" class="course-tab-content" style="display: none;">
             <div class="settings-section">
-              <h3>作業通知</h3>
+              <h3>Assignment Notifications</h3>
               <div id="course-announcements-list-homework" class="announce-list">
-                <p>載入中...</p>
+                <p>Loading...</p>
               </div>
             </div>
           </div>
@@ -420,9 +424,9 @@
           <!-- 考試通知 -->
           <div id="course-exam" class="course-tab-content" style="display: none;">
             <div class="settings-section">
-              <h3>考試通知</h3>
+              <h3>Exam Notifications</h3>
               <div id="course-announcements-list-exam" class="announce-list">
-                <p>載入中...</p>
+                <p>Loading...</p>
               </div>
             </div>
           </div>
@@ -430,9 +434,9 @@
             <!-- 課程異動通知 -->
             <div id="course-courseChange" class="course-tab-content" style="display: none;">
               <div class="settings-section">
-                <h3>課程異動通知</h3>
+                <h3>Course Change Notifications</h3>
                 <div id="course-announcements-list-courseChange" class="announce-list">
-                  <p>載入中...</p>
+                  <p>Loading...</p>
                 </div>
               </div>
             </div>
@@ -440,9 +444,9 @@
             <!-- 討論區 -->
             <div id="course-discussion" class="course-tab-content" style="display: none;">
               <div class="settings-section">
-                <h3>討論區</h3>
+                <h3>Discussion Board</h3>
                 <div id="course-announcements-list-discussion" class="announce-list">
-                  <p>載入中...</p>
+                  <p>Loading...</p>
                 </div>
               </div>
             </div>
@@ -450,40 +454,40 @@
             <!-- 成績公告 -->
             <div id="course-grade" class="course-tab-content" style="display: none;">
               <div class="settings-section">
-                <h3>成績公告</h3>
+                <h3>Grade Announcements</h3>
                 <div id="course-announcements-list-grade" class="announce-list">
-                  <p>載入中...</p>
+                  <p>Loading...</p>
                 </div>
               </div>
             </div>
             <!-- 發布公告 -->
             <div id="course-publish" class="course-tab-content" style="display: none;">
               <div class="settings-section">
-                <h3>發布新公告</h3>
+                <h3>Create New Announcement</h3>
               <div style="margin-bottom: 16px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500;">公告類型</label>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Announcement Type</label>
                 <select id="publish-type" class="settings-input" style="width: 100%;">
-                  <option value="一般公告">📢 一般公告</option>
-                  <option value="作業通知">📝 作業通知</option>
-                  <option value="考試通知">📋 考試通知</option>
-                  <option value="課程異動通知">🔄 課程異動通知</option>
-                  <option value="討論區">💬 討論區</option>
-                  <option value="成績公告">📊 成績公告</option>
+                  <option value="一般公告">📢 General Announcement</option>
+                  <option value="作業通知">📝 Assignment Notification</option>
+                  <option value="考試通知">📋 Exam Notification</option>
+                  <option value="課程異動通知">🔄 Course Change Notification</option>
+                  <option value="討論區">💬 Discussion Board</option>
+                  <option value="成績公告">📊 Grade Announcement</option>
                 </select>
               </div>
                 <div style="margin-bottom: 16px;">
-                  <label style="display: block; margin-bottom: 8px; font-weight: 500;">公告標題（選填）</label>
-                  <input type="text" id="publish-title" class="settings-input" style="width: 100%;" placeholder="輸入標題...">
+                  <label style="display: block; margin-bottom: 8px; font-weight: 500;">Announcement Title (Optional)）</label>
+                  <input type="text" id="publish-title" class="settings-input" style="width: 100%;" placeholder="Enter title...">
                 </div>
                 <div style="margin-bottom: 16px;">
-                  <label style="display: block; margin-bottom: 8px; font-weight: 500;">公告內容</label>
-                  <textarea id="publish-content" class="settings-input" style="width: 100%; min-height: 150px;" placeholder="請輸入公告內容..."></textarea>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 500;">Announcement Content</label>
+                  <textarea id="publish-content" class="settings-input" style="width: 100%; min-height: 150px;" placeholder="Enter announcement content..."></textarea>
                 </div>
                 <div style="margin-bottom: 16px;">
-                  <label style="display: block; margin-bottom: 8px; font-weight: 500;">截止日期（選填）</label>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 500;">Due Date (Optional)</label>
                   <input type="date" id="publish-date" class="settings-input" style="width: 200px;">
                 </div>
-                <button class="btn-primary" onclick="publishCourseAnnouncement()">📢 發布公告</button>
+                <button class="btn-primary" onclick="publishCourseAnnouncement()">📢 Publish Announcement</button>
               </div>
             </div>
           </div>
@@ -493,7 +497,7 @@
 
   <footer class="app-footer">
     Copyright © 2026 TronClass. All Rights Reserved. Wisdom Garden Limited &nbsp;|&nbsp;
-    最佳使用環境：作業系統 Win 7 以上・MAC OS X・瀏覽器：Edge・Chrome 55以上・Firefox 50.0以上・Safari 9.0以上。
+    Recommended Environment:Windows 7 or above, macOS X, Edge, Chrome 55+, Firefox 50+, Safari 9+.
   </footer>
 </div>
 
