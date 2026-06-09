@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>國立中山大學 學習平台 - 登入</title>
+<title>National Sun Yat-sen University Learning Platform - Login</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
@@ -12,7 +12,7 @@
 <div id="login-page">
   <div class="login-wrap">
     <div class="login-left">
-      <h1>國立中山大學</h1>
+      <h1>National Sun Yat-sen University</h1>
       <div class="login-illo">
         <div class="illo-screen">
           <div class="illo-line"></div>
@@ -30,46 +30,46 @@
     </div>
 
     <div class="login-card">
-      <h2>帳號密碼登入</h2>
+      <h2>Account Login</h2>
 
       <form method="POST" action="/login">
         <div class="login-field">
           <span class="field-icon">👥</span>
           <select name="role" required>
-            <option value="student">👨‍🎓 學生登入</option>
-            <option value="teacher">👩‍🏫 教師登入</option>
+            <option value="student">👨‍🎓 Student Login</option>
+            <option value="teacher">👩‍🏫 Teacher Login</option>
           </select>
         </div>
 
         <div class="login-field">
           <span class="field-icon">👤</span>
-          <input type="text" name="user_id" placeholder="學號 / 教師編號" required>
+          <input type="text" name="user_id" placeholder="Student ID / Teacher ID" required>
         </div>
 
         <div class="login-field">
           <span class="field-icon">🔒</span>
-          <input type="password" name="password" placeholder="密碼" required>
+          <input type="password" name="password" placeholder="Password" required>
         </div>
 
         {% if error %}
         <div class="login-error">{{ error }}</div>
         {% endif %}
 
-        <button type="submit" class="btn-login">登入</button>
+        <button type="submit" class="btn-login">Login</button>
       </form>
 
       <div class="login-hint">
-        <strong>📌 測試帳號</strong><br>
-        學生：B0111111111 / Amy111<br>
-        學生：B0111111112 / Andy112<br>
-        教師：T123456789 / T12345pclo<br>
-        教師：T192837465 / T19283Har
+        <strong>📌 Test Accounts</strong><br>
+        Student: B0111111111 / Amy111<br>
+        Student: B0111111112 / Andy112<br>
+        Teacher: T123456789 / T12345pclo<br>
+        Teacher: T192837465 / T19283Har
       </div>
     </div>
   </div>
 
   <div class="login-footer">
-    Copyright © 2026 國立中山大學 學習平台
+    Copyright © 2026 National Sun Yat-sen University Learning Platform
   </div>
 </div>
 
