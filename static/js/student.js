@@ -666,9 +666,20 @@ function getAllNotificationToggle() {
 }
 
 function getNotificationLabel(toggle) {
-  return toggle.closest('.settings-row')
-               .querySelector('.settings-label')
-               .childNodes[0].textContent.trim();
+  const text = toggle.closest('.settings-row')
+    .querySelector('.settings-label')
+    .textContent.trim();
+
+  const map = {
+    'General Announcements': '一般公告',
+    'Assignment Notifications': '作業通知',
+    'Exam Notifications': '考試通知',
+    'Course Change Notifications': '課程異動通知',
+    'Discussion Board': '討論區',
+    'Grade Announcements': '成績公告'
+  };
+
+  return map[text] || text;
 }
 
 function setToggleState(toggle, isOn) {
