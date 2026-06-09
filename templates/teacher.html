@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>教師專區 - 國立中山大學 學習平台</title>
+<title>Faculty Section - National Sun Yat-sen University Cyber University</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher.css') }}">
 </head>
@@ -13,12 +13,12 @@
      LOGIN PAGE
 ════════════════════════════════════ -->
 <div id="login-page">
-  <span class="login-lang">繁體中文 ▾</span>
+  <span class="login-lang">English ▾</span>
 
   <div class="login-wrap">
     <!-- left illustration -->
     <div class="login-left">
-      <h1>國立中山大學</h1>
+      <h1>National Sun Yat-sen University</h1>
       <div class="login-illo">
         <div class="illo-screen">
           <div class="illo-line"></div>
@@ -37,13 +37,13 @@
 
     <!-- right card -->
     <div class="login-card">
-      <h2>帳號密碼登入</h2>
+      <h2>Account Login</h2>
 
       <div class="login-field">
         <span class="field-icon">👥</span>
         <select id="login-role" style="width:100%; padding: 13px 14px; border: 2px solid var(--border); border-radius: 10px; background: #fafafa;">
-          <option value="student">👨‍🎓 學生登入</option>
-          <option value="teacher" selected>👩‍🏫 教師登入</option>
+          <option value="student">👨‍🎓 Student Login</option>
+          <option value="teacher" selected>👩‍🏫 Faculty Login</option>
         </select>
       </div>
 
@@ -57,20 +57,19 @@
         <input type="password" id="login-pass" placeholder="密碼" value="password123">
       </div>
 
-      <div class="login-error" id="login-error">帳號或密碼錯誤，請重新輸入。</div>
+      <div class="login-error" id="login-error">Invalid username or password. Please try again.</div>
 
-      <button class="btn-login" onclick="doLogin()">登入</button>
+      <button class="btn-login" onclick="doLogin()">Login</button>
 
       <div class="login-hint">
-        學校師生請使用 SSO 帳號登入<br>
-        校外人士請使用註冊的 Email 登入
+        Faculty and students, please log in with your SSO account.<br>
+        External users, please log in with your registered email.
       </div>
     </div>
   </div>
 
   <div class="login-footer">
-    Copyright © 2026 TronClass. 保留所有權利 &nbsp;|&nbsp;
-    最佳使用環境：Win 7 以上・MAC OS X・瀏覽器：Edge・Chrome 55以上・Firefox 50.0以上・Safari 9.0以上。
+    Optimized for:Win 7 +・MAC OS X・Browser:Edge・Chrome 55+・Firefox 50.0+・Safari 9.0+
   </div>
 </div>
 
@@ -261,7 +260,7 @@
   <div style="width:100%">
     <div class="page-header">
       <h2>Assignment Management</h2>
-      <p id="homework-management-summary">已發布0則作業通知</p>
+      <p id="homework-management-summary">0 assignment notifications published</p>
     </div>
     <div class="settings-wrap">
       <div class="settings-section">

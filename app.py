@@ -618,7 +618,7 @@ def get_course_materials(course_id):
                 notification_id,
                 course_id,
                 '一般公告',
-                f'新教材上傳\n\n教材「{filename}」已上傳，請至課程教材區下載。',
+                f'The course material\n\n「{filename}」has been uploaded. Please go to the Course Materials section to download it.。',
                 time.strftime("%Y-%m-%d")
             )
         )
@@ -917,13 +917,13 @@ def create_live_room():
     room_url = f"{SCREEGO_URL}/?room={room_name}"
 
     notification_id = str(uuid.uuid4())[:8]
-    information = f"""【線上課程】老師已發起線上直播課程！
+    information = f"""[Live Class] The instructor has started a live session!
 
-點擊下方連結加入課程，觀看老師螢幕畫面：
+Click the link below to join the class and view the instructor's screen:
 
 👉 {room_url} 👈
 
-（此連結在本次課程結束後失效）"""
+(This link will expire after the session ends.)"""
 
     cursor.execute("""
         INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)
@@ -937,7 +937,7 @@ def create_live_room():
         "success": True,
         "room_url": room_url,
         "course_id": course_id,
-        "message": "房間已建立！公告已自動發布到學生公告區"
+        "message": "Session created! Notification automatically posted to the Student Announcements."
     })
 
 @app.route("/api/all_announcements")
