@@ -122,10 +122,10 @@ INSERT INTO Student VALUES ('B0111111111','Amy','B011111111@nsysu.student.edu.tw
 INSERT INTO Student VALUES ('B0111111112','Andy','B011111112@nsysu.student.edu.tw','Andy112');
 INSERT INTO Teacher VALUES ('T123456789','pclo','T123456789@nsysu.student.edu.tw','T12345pclo');
 INSERT INTO Teacher VALUES ('T192837465','Harry','T192837465@nsysu.student.edu.tw','T19283Har');
-INSERT INTO Course VALUES ('MIS205', FALSE, '資料庫管理', '114_2', '一堂非常棒的課');
-INSERT INTO Course VALUES ('MIS304', FALSE, '管理資訊系統', '114_2', '管理資訊系統核心課程');
-INSERT INTO Course VALUES ('MIS206', FALSE, '商事法', '114_2', '商事法基礎概念');
-INSERT INTO Course VALUES ('CSS137', TRUE, '資料視覺化', '114_2', '資料視覺化工具與實作');
+INSERT INTO Course VALUES ('MIS205', FALSE, 'Database Management', '114_2', 'an excellent class');
+INSERT INTO Course VALUES ('MIS304', FALSE, 'Management Information Systems', '114_2', 'Core course in Management Information Systems');
+INSERT INTO Course VALUES ('MIS206', FALSE, 'Commercial Law', '114_2', 'Basic concepts of Commercial Law');
+INSERT INTO Course VALUES ('CSS137', TRUE, 'Data Visualization', '114_2', 'Tools and Practice of Data Visualization');
 INSERT INTO Teaches VALUES ('MIS205', 'T123456789');
 INSERT INTO Teaches VALUES ('MIS304', 'T192837465');
 INSERT INTO Teaches VALUES ('MIS206', 'T123456789');
@@ -151,7 +151,8 @@ INSERT INTO Setting VALUES ('B0111111112', TRUE, '課程異動通知');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '討論區回覆');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, '成績公告');
 
-INSERT INTO Notification VALUES ('T192837465', 'a', 'MIS304', '一般公告', '大家都A+', '2026-06-11');
-INSERT INTO Notification VALUES ('T192837465', 'b', 'MIS304', '作業通知', '作業作業', '2026-06-07');
-INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', '考試通知', '期末考爆爆王', '2026-06-03');
+INSERT INTO Notification VALUES ('T192837465', 'a', 'MIS304', '一般公告', 'Everyone got an A+', '2026-06-11');
+INSERT INTO Notification VALUES ('T192837465', 'b', 'MIS304', '作業通知', 'Homework', '2026-06-07');
+INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', '考試通知', 'Crazy final exam', '2026-06-03');
 INSERT INTO Notification VALUES ('T192837465', 'd', 'MIS205', '討論區', 'Do you like coding?', '2026-06-10');
+INSERT INTO Notification VALUES ('T192837465', 'e', 'MIS205', '課程異動通知', 'The final project was canceled, yay~~', '2026-06-10');

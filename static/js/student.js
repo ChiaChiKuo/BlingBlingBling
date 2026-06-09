@@ -95,7 +95,7 @@ function displayCourses(courses) {
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
                 <div class="course-dept">Course Code:${escapeHtml(course.course_id)}</div>
-                <div class="course-stats"><span>📖 ${course.credits || 3} 學分</span><span>📅 ${course.semester || '進行中'}</span></div>
+                <div class="course-stats"><span>📖 ${course.credits || 3} credits</span><span>📅 ${course.semester || '進行中'}</span></div>
             </div>
         `;
         container.appendChild(card);

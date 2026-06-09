@@ -119,7 +119,7 @@ function displayCourses(courses) {
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
                 <div class="course-dept">Course Code:${escapeHtml(course.course_id)}</div>
-                <div class="course-stats"><span>📖 ${course.credits || 3} Credits</span><span>👥 ${course.student_count || 0} Students</span></div>
+                <div class="course-stats"><span>📖 ${course.credits || 3} Credits</span></div>
             </div>
         `;
         container.appendChild(card);
