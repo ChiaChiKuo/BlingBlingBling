@@ -336,12 +336,41 @@ async function loadUnreadNotificationDots() {
 }
 
 function applyUnreadNotificationDots(unread) {
-    document.querySelectorAll('[data-notification-dot]').forEach(dot => {
+    if (!unread) return;
+
+    // 1. 先處理側邊欄（Sidebar）的全域紅點，只要 Flask 說有未讀就亮
+    document.querySelectorAll('.sidebar-submenu [data-notification-dot], #announcement-submenu [data-notification-dot]').forEach(dot => {
         const category = dot.dataset.notificationDot;
         dot.classList.toggle('show', Boolean(unread[category]));
     });
-}
 
+    // 2. 處理課程內頁的頁籤紅點
+    // 💡 關鍵：我們直接去看目前畫面上「由 Flask 渲染出來的公告項目」
+    // 這樣不管是在登入時、重新整理時、還是切換課程時，都不會因為非同步抓不到而熄滅！
+    document.querySelectorAll('.course-tabs [data-notification-dot]').forEach(dot => {
+        const category = dot.dataset.notificationDot; // 例如 'exam'
+        const isBackendUnread = Boolean(unread[category]); // Flask 全域通知說有未讀
+
+        let shouldShowInnerDot = false;
+
+        // 如果 Flask 說全域有未讀，我們才進一步檢查目前這門課
+        if (isBackendUnread && currentCourseId) {
+            
+            // 🔍 我們直接用最簡單的屬性選擇器，看畫面上有沒有這門課、這個類型的公告
+            // 而且這個公告內部的紅點「沒有 read 類別」（代表真的未讀）
+            const hasUnreadItem = document.querySelector(
+                `.announce-item[data-course-id="${currentCourseId}"][data-notification-type="${category}"] .announce-dot:not(.read)`
+            );
+
+            if (hasUnreadItem) {
+                shouldShowInnerDot = true;
+            }
+        }
+
+        // 只有當前這門課真的存在未讀公告時，內頁頁籤才會亮
+        dot.classList.toggle('show', shouldShowInnerDot);
+    });
+}
 async function markNotificationRead(notificationId, courseId, item) {
     if (!notificationId) return;
 
@@ -489,6 +518,7 @@ async function viewCourseDetail(courseId) {
         console.error('載入課程詳情錯誤:', error);
         document.getElementById('course-description').innerHTML = `<div class="error-state">載入失敗：${error.message}<button onclick="viewCourseDetail('${courseId}')">重新載入</button></div>`;
     }
+    loadUnreadNotificationDots();
 }
 
 function displayCourseDetail(data) {
