@@ -394,18 +394,18 @@ async function loadCategorizedAnnouncements(courseId) {
         };
         
         announcements.forEach(a => {
-            const type = a.type || '公告';
-            if (type === '公告' || type === '一般公告') {
+            const type = a.type || 'announcement';
+            if (type === 'all' || type === 'announcement') {
                 categories.general.push(a);
-            } else if (type === '作業通知') {
+            } else if (type === 'assignment') {
                 categories.homework.push(a);
-            } else if (type === '考試通知') {
+            } else if (type === 'exam') {
                 categories.exam.push(a);
-            } else if (type === '課程異動通知') {
+            } else if (type === 'courses_change') {
                 categories.courseChange.push(a);
-            } else if (type === '討論區') {
+            } else if (type === 'discussion') {
                 categories.discussion.push(a);
-            } else if (type === '成績公告') {
+            } else if (type === 'scores') {
                 categories.grade.push(a);
             }
         });
@@ -475,7 +475,7 @@ async function publishCourseAnnouncement() {
     const title = document.getElementById('publish-title').value;
     const content = document.getElementById('publish-content').value;
     const date = document.getElementById('publish-date').value;
-    const type = document.getElementById('publish-type')?.value || '公告';
+    const type = document.getElementById('publish-type')?.value || 'announcement';
     
     if (!content) {
         showToast('請填寫公告內容');

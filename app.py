@@ -32,28 +32,28 @@ def get_db():
 
 NOTIFICATION_CATEGORY_MAP = {
     "assignment": {
-        "notification_types": ("作業通知",),
-        "setting_types": ("作業通知",),
+        "notification_types": ("assignment",),
+        "setting_types": ("assignment",),
     },
     "exam": {
-        "notification_types": ("考試通知",),
-        "setting_types": ("考試通知",),
+        "notification_types": ("exam",),
+        "setting_types": ("exam",),
     },
     "discussion": {
-        "notification_types": ("討論區", "討論區通知"),
-        "setting_types": ("討論區", "討論區通知", "討論區回覆"),
+        "notification_types": ("discussion",),
+        "setting_types": ("discussion",),
     },
     "announcement": {
-        "notification_types": ("一般公告", "公告", "新公告通知"),
-        "setting_types": ("一般公告", "一般公告通知", "新公告通知"),
+        "notification_types": ("announcement",),
+        "setting_types": ("announcement",),
     },
     "courses_change": {
-        "notification_types": ("課程異動通知",),
-        "setting_types": ("課程異動通知"),
+        "notification_types": ("courses_change",),
+        "setting_types": ("courses_change",),
     },
     "scores": {
-        "notification_types": ("成績公告",),
-        "setting_types": ("成績公告"),
+        "notification_types": ("scores",),
+        "setting_types": ("scores",),
     },
 }
 
@@ -245,7 +245,7 @@ def events():
     role = session["role"]
 
     # 只顯示這三種類型
-    allowed_types = ('作業', '考試', '課程異動')
+    allowed_types = ('assignment', 'exam', 'courses_change')
 
     conn = get_db()
     cursor = conn.cursor()
@@ -257,14 +257,14 @@ def events():
             WHERE course_id IN (
                 SELECT course_id FROM Enrolls WHERE student_id = ?
             )
-            AND type IN ('作業通知', '考試通知', '課程異動通知')
+            AND type IN ('assignment', 'exam', 'courses_change')
         """, (user_id,))
     else:
         cursor.execute("""
             SELECT information AS title, due_date AS start, type, information
             FROM Notification
             WHERE teacher_id = ?
-            AND type IN ('作業通知', '考試通知', '課程異動通知')
+            AND type IN ('assignment', 'exam', 'courses_change')
         """, (user_id,))
 
     events = [dict(row) for row in cursor.fetchall()]
@@ -361,8 +361,8 @@ def get_announcements():
     params = [session["user_id"]]
     type_filter = ""
     if requested_type:
-        if requested_type in ("一般公告", "公告"):
-            type_filter = "AND n.type IN ('公告', '一般公告')"
+        if requested_type in ("announcement"):
+            type_filter = "AND n.type IN ('announcement')"
         else:
             type_filter = "AND n.type = ?"
             params.append(requested_type)
@@ -396,8 +396,8 @@ def get_teacher_announcements():
     params = [session["user_id"]]
     type_filter = ""
     if requested_type:
-        if requested_type in ("一般公告", "公告"):
-            type_filter = "AND n.type IN ('公告', '一般公告')"
+        if requested_type in ("announcement"):
+            type_filter = "AND n.type IN ('announcement')"
         else:
             type_filter = "AND n.type = ?"
             params.append(requested_type)
@@ -444,7 +444,7 @@ def create_announcement():
     cursor = conn.cursor()
 
     notification_id = str(uuid.uuid4())[:8]
-    announcement_type = data.get("type", "一般公告")
+    announcement_type = data.get("type", "announcement")
 
     cursor.execute("""
         INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)
@@ -617,7 +617,7 @@ def get_course_materials(course_id):
                 session["user_id"],
                 notification_id,
                 course_id,
-                '一般公告',
+                'announcement',
                 f'The course material\n\n「{filename}」has been uploaded. Please go to the Course Materials section to download it.。',
                 time.strftime("%Y-%m-%d")
             )
@@ -928,7 +928,7 @@ Click the link below to join the class and view the instructor's screen:
     cursor.execute("""
         INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date)
         VALUES (?, ?, ?, ?, ?, date('now', '+7 days'))
-    """, (session["user_id"], notification_id, course_id, "公告", information))
+    """, (session["user_id"], notification_id, course_id, "announcement", information))
 
     conn.commit()
     conn.close()
@@ -997,7 +997,7 @@ def delete_material(course_id, material_id):
     # 刪除對應通知
     cursor.execute("""
         DELETE FROM Notification 
-        WHERE course_id = ? AND type = '一般公告' 
+        WHERE course_id = ? AND type = 'announcement 
         AND information LIKE ?
     """, (course_id, f'%{mat["stored_filename"].split("_", 1)[-1]}%'))
 
