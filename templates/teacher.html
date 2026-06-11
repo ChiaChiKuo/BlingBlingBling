@@ -128,10 +128,10 @@
       </div>
            <div class="sidebar-section-title">📊 Assessment & Grades</div>
 
-      <div class="sidebar-item" id="nav-grade-management" onclick="goTeacherAnnouncementType('grade-management', '成績公告', '成績管理')">
+      <div class="sidebar-item" id="nav-grade-management" onclick="goTeacherAnnouncementType('grade-management', 'scores')">
         <span class="si-icon">📝</span> Grade Management
       </div>
-      <div class="sidebar-item" id="nav-homework-management" onclick="goTeacherAnnouncementType('homework-management', '作業通知', '作業管理')">
+      <div class="sidebar-item" id="nav-homework-management" onclick="goTeacherAnnouncementType('homework-management', 'assignment')">
         <span class="si-icon">📋</span> Assignment Management
       </div>
       <div class="sidebar-item" onclick="showToast('Opening interactive Materials...')">
@@ -188,12 +188,12 @@
             </select>
             <!-- 公告類型下拉選單 -->
             <select id="announce_type" class="settings-input" style="width:100%; margin-bottom: 16px;">
-              <option value="一般公告">📢 General Announcement</option>
-              <option value="作業通知">📝 Assignment Notification</option>
-              <option value="考試通知">📋 Exam Notification</option>
-              <option value="課程異動通知">🔄 Course Change Notification</option>
-              <option value="討論區">💬 Discussion Board</option>
-              <option value="成績公告">📊 Grade Announcement</option>
+              <option value="announcement">📢 General Announcement</option>
+              <option value="assignment">📝 Assignment Notification</option>
+              <option value="exam">📋 Exam Notification</option>
+              <option value="courses_change">🔄 Course Change Notification</option>
+              <option value="discussion">💬 Discussion Board</option>
+              <option value="scores">📊 Grade Announcement</option>
             </select>
             <input type="text" id="announce_title" placeholder="Announcement Title" class="settings-input" style="width:100%; margin-bottom: 16px;">
             <textarea id="announce_content" placeholder="Announcement Content..." class="settings-input" style="width:100%; margin-bottom: 16px; min-height: 120px;"></textarea>
@@ -466,12 +466,12 @@
               <div style="margin-bottom: 16px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 500;">Announcement Type</label>
                 <select id="publish-type" class="settings-input" style="width: 100%;">
-                  <option value="一般公告">📢 General Announcement</option>
-                  <option value="作業通知">📝 Assignment Notification</option>
-                  <option value="考試通知">📋 Exam Notification</option>
-                  <option value="課程異動通知">🔄 Course Change Notification</option>
-                  <option value="討論區">💬 Discussion Board</option>
-                  <option value="成績公告">📊 Grade Announcement</option>
+                  <option value="announcement">📢 General Announcement</option>
+                  <option value="assignment">📝 Assignment Notification</option>
+                  <option value="exam">📋 Exam Notification</option>
+                  <option value="courses_change">🔄 Course Change Notification</option>
+                  <option value="discussion">💬 Discussion Board</option>
+                  <option value="scores">📊 Grade Announcement</option>
                 </select>
               </div>
                 <div style="margin-bottom: 16px;">

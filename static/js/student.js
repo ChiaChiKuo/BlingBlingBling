@@ -215,12 +215,12 @@ function goAnnouncementCategory(type) {
 
 function updateAnnouncementSubnav(type) {
     const subItems = {
-        '一般公告': document.getElementById('nav-announcements-general'),
-        '作業通知': document.getElementById('nav-announcements-homework'),
-        '考試通知': document.getElementById('nav-announcements-exam'),
-        '課程異動通知': document.getElementById('nav-announcements-course-change'),
-        '討論區': document.getElementById('nav-announcements-discussion'),
-        '成績公告': document.getElementById('nav-announcements-grade')
+        'announcement': document.getElementById('nav-announcements-general'),
+        'assignment': document.getElementById('nav-announcements-homework'),
+        'exam': document.getElementById('nav-announcements-exam'),
+        'courses_change': document.getElementById('nav-announcements-course-change'),
+        'discussion': document.getElementById('nav-announcements-discussion'),
+        'scores': document.getElementById('nav-announcements-grade')
     };
 
     Object.values(subItems).forEach(item => {
@@ -553,14 +553,12 @@ function displayAnnouncementsByType(announcements) {
     const sortedAnnouncements = [...announcements].sort(compareAnnouncementsDesc);
     
     const typeMapping = {
-        '公告': 'course-announcements-list-general',
-        '一般公告': 'course-announcements-list-general',
-        '線上課程': 'course-announcements-list-general',
-        '作業通知': 'course-announcements-list-homework',
-        '考試通知': 'course-announcements-list-exam',
-        '課程異動通知': 'course-announcements-list-courseChange',
-        '討論區': 'course-announcements-list-discussion',
-        '成績公告': 'course-announcements-list-grade'
+        'announcement': 'course-announcements-list-general',
+        'assignment': 'course-announcements-list-homework',
+        'exam': 'course-announcements-list-exam',
+        'courses_change': 'course-announcements-list-courseChange',
+        'discussion': 'course-announcements-list-discussion',
+        'scores': 'course-announcements-list-grade'
     };
     
     for (const containerId of Object.values(typeMapping)) {
@@ -655,7 +653,7 @@ function switchCourseTab(tabName, event) {
 
 //通知按鈕狀態變化
 // ── 通知設定 ──
-const ALL_NOTIFICATION_TYPE = '全部通知';
+const ALL_NOTIFICATION_TYPE = 'all';
 
 function getNotificationToggles() {
   return Array.from(document.querySelectorAll('.notification-toggle'));
@@ -671,12 +669,12 @@ function getNotificationLabel(toggle) {
     .textContent.trim();
 
   const map = {
-    'General Announcements': '一般公告',
-    'Assignment Notifications': '作業通知',
-    'Exam Notifications': '考試通知',
-    'Course Change Notifications': '課程異動通知',
-    'Discussion Board': '討論區',
-    'Grade Announcements': '成績公告'
+    'General Announcements': 'announcement',
+    'Assignment Notifications': 'assignment',
+    'Exam Notifications': 'exam',
+    'Course Change Notifications': 'courses_change',
+    'Discussion Board': 'discussion',
+    'Grade Announcements': 'scores'
   };
 
   return map[text] || text;
