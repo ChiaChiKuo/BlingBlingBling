@@ -151,8 +151,8 @@ INSERT INTO Setting VALUES ('B0111111112', TRUE, 'courses_change');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, 'discussion');
 INSERT INTO Setting VALUES ('B0111111112', TRUE, 'scores');
 
-INSERT INTO Notification VALUES ('T192837465', 'a', 'MIS304', 'announcement', 'Everyone got an A+', '2026-06-11');
-INSERT INTO Notification VALUES ('T192837465', 'b', 'MIS304', 'assignment', 'Homework', '2026-06-07');
+INSERT INTO Notification VALUES ('T123456789', 'a', 'MIS304', 'announcement', 'Everyone got an A+', '2026-06-11');
+INSERT INTO Notification VALUES ('T123456789', 'b', 'MIS304', 'assignment', 'Homework', '2026-06-07');
 INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', 'exam', 'Crazy final exam', '2026-06-03');
-INSERT INTO Notification VALUES ('T192837465', 'd', 'MIS205', 'discussion', 'Do you like coding?', '2026-06-10');
-INSERT INTO Notification VALUES ('T192837465', 'e', 'MIS205', 'courses_change', 'The final project was canceled, yay~~', '2026-06-10');
+INSERT INTO Notification VALUES ('T123456789', 'd', 'MIS205', 'discussion', 'Do you like coding?', '2026-06-10');
+INSERT INTO Notification VALUES ('T123456789', 'e', 'MIS205', 'courses_change', 'The final project was canceled, yay~~', '2026-06-10');
