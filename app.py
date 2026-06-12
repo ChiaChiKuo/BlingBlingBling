@@ -480,6 +480,20 @@ def update_announcement(notification_id, course_id):
           AND course_id = ?
           AND teacher_id = ?
     """, (information, due_date, notification_id, course_id, session["user_id"]))
+    import re
+    match = re.search(r'「(.+?)」', information)
+    if match:
+        filename = match.group(1)
+        parts = information.split('\n\n')
+        new_title = parts[0].strip() if parts else ''
+        new_desc = parts[1].strip() if len(parts) > 1 else ''
+        cursor.execute("""
+            UPDATE Module SET title = ?, description = ?
+            WHERE module_id IN (
+                SELECT m.module_id FROM Material m
+                WHERE m.course_id = ? AND m.filename = ?
+            )
+        """, (new_title, new_desc, course_id, filename))
 
     conn.commit()
     updated = cursor.rowcount

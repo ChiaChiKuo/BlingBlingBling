@@ -938,7 +938,7 @@ async function saveAnnouncement(item) {
             <button class="btn-edit-announcement">✏️ Edit</button>
             <button class="btn-delete-announcement">🗑️ Delete</button>
         `;
-
+        await loadCourseMaterials(courseId);
         showToast('Announcement updated!');
     } else {
         showToast('Update failed.');
