@@ -103,12 +103,6 @@ CREATE TABLE Module(
 );
 CREATE TABLE Material(
  module_id CHAR(10) NOT NULL,
- material VARCHAR NOT NULL,
- PRIMARY KEY (material,module_id),
- FOREIGN KEY (module_id) REFERENCES Module(module_id)
- ON DELETE CASCADE ON UPDATE CASCADE
-);
-CREATE TABLE CourseMaterial(
  material_id CHAR(10) NOT NULL PRIMARY KEY,
  course_id CHAR(10) NOT NULL,
  filename VARCHAR NOT NULL,
@@ -116,7 +110,9 @@ CREATE TABLE CourseMaterial(
  uploaded_at TEXT NOT NULL,
  uploaded_by CHAR(10) NOT NULL,
  FOREIGN KEY (course_id) REFERENCES Course(course_id)
- ON DELETE CASCADE ON UPDATE CASCADE
+ ON DELETE CASCADE ON UPDATE CASCADE,
+ FOREIGN KEY (module_id) REFERENCES Module(module_id)
+ ON DELETE SET NULL
 );
 INSERT INTO Student VALUES ('B0111111111','Amy','B011111111@nsysu.student.edu.tw','Amy111');
 INSERT INTO Student VALUES ('B0111111112','Andy','B011111112@nsysu.student.edu.tw','Andy112');

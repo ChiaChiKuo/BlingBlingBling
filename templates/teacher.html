@@ -384,21 +384,35 @@
               </div>
             </div>
 
-            <div id="course-materials" class="course-tab-content" style="display: none;">
-              <div class="settings-section">
-                <h3>Material Upload & Management</h3>
-                <p style="color: #555; margin-bottom: 12px;">Upload course materials for students to download from "My Courses".</p>
-                <label for="material-file" class="btn-primary" style="display:inline-flex; margin-bottom: 10px;">
-  Choose File
-</label>
-<span id="selected-file-name" style="margin-left: 10px; color: #666;">No file selected</span>
-<input type="file" id="material-file" style="display:none;" onchange="updateFileName(this)">
-                <button class="btn-primary" style="margin-bottom: 20px;" onclick="uploadCourseMaterial()">Upload Material</button>
-                <div id="uploaded-materials-list" class="announce-list">
-                  <p style="color: #999;">Loading materials...</p>
+          <div id="course-materials" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>Material Upload & Management</h3>
+              <p style="color: #555; margin-bottom: 12px;">Upload course materials for students to download from "My Courses".</p>
+
+              <div class="material-upload-form">
+                <div style="margin-bottom: 12px;">
+                  <label class="material-form-label">Module Title <span style="color:red">*</span></label>
+                  <input type="text" id="material-title" class="settings-input" style="width:100%;" placeholder="e.g. Week 1 - Introduction">
                 </div>
+                <div style="margin-bottom: 12px;">
+                  <label class="material-form-label">Description</label>
+                  <textarea id="material-description" class="settings-input" style="width:100%; min-height:80px; resize:vertical;" placeholder="Brief description of this module..."></textarea>
+                </div>
+                <div style="margin-bottom: 16px; display:flex; align-items:center; gap:12px;">
+                  <label for="material-file" class="btn-primary" style="display:inline-flex; cursor:pointer;">Choose File</label>
+                  <span id="selected-file-name" style="color: #666;">No file selected</span>
+                  <input type="file" id="material-file" style="display:none;" onchange="updateFileName(this)">
+                </div>
+                <button class="btn-primary" onclick="uploadCourseMaterial()">⬆️ Upload Material</button>
+              </div>
+
+              <hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
+              <h4 style="margin-bottom: 12px; color: #555;">Uploaded Materials</h4>
+              <div id="uploaded-materials-list" class="announce-list">
+                <p style="color: #999;">Loading materials...</p>
               </div>
             </div>
+          </div>
 
           <!-- 一般公告 -->
           <div id="course-general" class="course-tab-content" style="display: none;">

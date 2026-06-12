@@ -310,21 +310,18 @@ async function loadCourseMaterials(courseId) {
         }
 
         container.innerHTML = materials.map(mat => `
-            <div class="announce-item" style="padding: 12px;">
+            <div class="announce-item" data-material-id="${escapeHtml(mat.material_id)}" data-course-id="${escapeHtml(currentCourseId)}" data-filename="${escapeHtml(mat.filename)}">
                 <div class="announce-content">
-                    <div class="announce-title">${escapeHtml(mat.filename)}</div>
-                    <div class="announce-desc" style="margin: 8px 0; color: #555;">Upload Time:${escapeHtml(mat.uploaded_at)}</div>
-                    <div class="announce-actions">
+                    <div class="announce-title material-module-title">${escapeHtml(mat.title || '(No title)')}</div>
+                    <div class="announce-desc material-module-desc" style="${mat.description ? '' : 'display:none;'}">${escapeHtml(mat.description || '')}</div>
+                    <div class="announce-desc" style="margin-top:6px;">📎 ${escapeHtml(mat.filename)} &nbsp;|&nbsp; ${escapeHtml(mat.uploaded_at)}</div>
+                    <div class="announce-actions" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
                         ${mat.filename.toLowerCase().endsWith('.pdf') ? `
-                            <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 10px;">
-                                Preview PDF
-                            </button>
+                            <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="font-size:13px; padding:6px 14px;">Preview</button>
                         ` : ''}
-
-                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="margin-right: 10px; display: inline-flex; text-decoration: none;">
-                            Download
-                        </a>
-                        <button class="btn-primary" style="background:#e53935;" onclick="deleteCourseMaterial('${courseId}', '${mat.material_id}')">🗑️ Delete</button>
+                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="font-size:13px; padding:6px 14px; text-decoration:none;">Download</a>
+                        <button class="btn-primary" style="font-size:13px; padding:6px 14px; background:#fff3e0; color:#e65100;" onclick="editMaterialModule(this)">Edit</button>
+                        <button class="btn-primary" style="font-size:13px; padding:6px 14px; background:#ffebee; color:#c62828;" onclick="deleteCourseMaterial('${escapeHtml(currentCourseId)}', '${escapeHtml(mat.material_id)}')">Delete</button>
                     </div>
                 </div>
             </div>
@@ -337,38 +334,132 @@ async function loadCourseMaterials(courseId) {
 
 async function uploadCourseMaterial() {
     if (!currentCourseId) {
-        showToast('請先從「我的課程」進入課程頁面');
+        showToast('Please enter a course from the course list first.');
         return;
     }
 
     const fileInput = document.getElementById('material-file');
-    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-        showToast('請選擇要上傳的教材檔案');
+    const file = fileInput.files[0];
+    if (!file) {
+        showToast('Please select a file to upload.');
         return;
     }
 
-    const file = fileInput.files[0];
+    const title = document.getElementById('material-title').value.trim();
+    const description = document.getElementById('material-description').value.trim();
+
+    if (!title) {
+        showToast('Please enter a module title.');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('material', file);
+    formData.append('title', title);
+    formData.append('description', description);
 
     try {
-        const response = await fetch(`/api/course/${currentCourseId}/materials`, {
+        const res = await fetch(`/api/course/${currentCourseId}/materials`, {
             method: 'POST',
             body: formData
         });
 
-        const result = await response.json();
-        if (!response.ok || !result.success) {
-            throw new Error(result.error || '上傳失敗');
+        const result = await res.json();
+        if (result.success) {
+            showToast(`「${file.name}」uploaded successfully!`);
+            fileInput.value = '';
+            document.getElementById('material-title').value = '';
+            document.getElementById('material-description').value = '';
+            document.getElementById('selected-file-name').textContent = 'No file selected';
+            await loadCourseMaterials(currentCourseId);
+            await loadCategorizedAnnouncements(currentCourseId);
+        } else {
+            showToast('Upload failed: ' + (result.error || ''));
         }
-
-        showToast('教材已上傳');
-        fileInput.value = '';
-        loadCourseMaterials(currentCourseId);
     } catch (error) {
-        console.error('上傳教材失敗:', error);
-        showToast('教材上傳失敗');
+        console.error(error);
+        showToast('Upload failed.');
     }
+}
+
+function editMaterialModule(btn) {
+    const item = btn.closest('.announce-item');
+    const materialId = item.dataset.materialId;
+    const courseId = item.dataset.courseId;
+    const titleElem = item.querySelector('.material-module-title');
+    const descElem = item.querySelector('.material-module-desc');
+    const actions = item.querySelector('.announce-actions');
+
+    const oldTitle = titleElem.textContent.trim();
+    const oldDesc = descElem ? descElem.textContent.trim() : '';
+
+    titleElem.innerHTML = `<input type="text" class="settings-input" style="width:100%;" value="${escapeHtml(oldTitle)}">`;
+    if (descElem) {
+        descElem.innerHTML = `<textarea class="settings-input" style="width:100%; min-height:60px; resize:vertical;">${escapeHtml(oldDesc)}</textarea>`;
+        descElem.style.display = 'block';
+    }
+
+    actions.innerHTML = `
+        <button class="btn-primary" style="font-size:13px; padding:6px 14px;" onclick="saveMaterialModule(this, '${courseId}', '${materialId}')">💾 Save</button>
+        <button class="btn-primary" style="font-size:13px; padding:6px 14px; background:#eee; color:#333;" onclick="cancelMaterialModule(this, '${escapeHtml(oldTitle)}', '${escapeHtml(oldDesc)}')">Cancel</button>
+    `;
+}
+
+async function saveMaterialModule(btn, courseId, materialId) {
+    const item = btn.closest('.announce-item');
+    const newTitle = item.querySelector('.material-module-title input').value.trim();
+    const newDesc = item.querySelector('.material-module-desc textarea')?.value.trim() || '';
+
+    if (!newTitle) {
+        showToast('Title cannot be empty.');
+        return;
+    }
+
+    const res = await fetch(`/api/course/${courseId}/materials/${materialId}/module`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle, description: newDesc })
+    });
+
+    const result = await res.json();
+    if (result.success) {
+        const titleElem = item.querySelector('.material-module-title');
+    titleElem.innerHTML = '';
+    titleElem.textContent = newTitle;
+        const descElem = item.querySelector('.material-module-desc');
+        if (descElem) {
+            descElem.textContent = newDesc;
+            descElem.style.display = newDesc ? 'block' : 'none';
+        }
+        item.querySelector('.announce-actions').innerHTML = `
+            ${item.dataset.filename && item.dataset.filename.toLowerCase().endsWith('.pdf') ? `
+                <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(materialId)}', '${item.dataset.filename}')" style="font-size:13px; padding:6px 14px;">Preview</button>
+            ` : ''}
+            <a class="btn-primary" href="/materials/${encodeURIComponent(materialId)}/download" style="font-size:13px; padding:6px 14px; text-decoration:none;">Download</a>
+            <button class="btn-primary" style="font-size:13px; padding:6px 14px; background:#fff3e0; color:#e65100;" onclick="editMaterialModule(this)">Edit</button>
+            <button class="btn-primary" style="font-size:13px; padding:6px 14px; background:#ffebee; color:#c62828;" onclick="deleteCourseMaterial('${courseId}', '${materialId}')">Delete</button>
+        `;
+        await loadCategorizedAnnouncements(courseId);
+        showToast('Updated successfully!');
+        setTimeout(() => location.reload(), 1500);
+    } else {
+        showToast('Update failed.');
+    }
+}
+
+function cancelMaterialModule(btn, oldTitle, oldDesc) {
+    const item = btn.closest('.announce-item');
+    item.querySelector('.material-module-title').textContent = oldTitle;
+    const descElem = item.querySelector('.material-module-desc');
+    if (descElem) {
+        descElem.textContent = oldDesc;
+        descElem.style.display = oldDesc ? 'block' : 'none';
+    }
+    item.querySelector('.announce-actions').innerHTML = `
+        <a class="btn-primary" href="/materials/${encodeURIComponent(item.dataset.materialId)}/download" style="font-size:13px; padding:6px 14px; text-decoration:none;">⬇️ Download</a>
+        <button class="btn-primary" style="font-size:13px; padding:6px 14px; background:#fff3e0; color:#e65100;" onclick="editMaterialModule(this)">✏️ Edit</button>
+        <button class="btn-primary" style="font-size:13px; padding:6px 14px; background:#ffebee; color:#c62828;" onclick="deleteCourseMaterial('${item.dataset.courseId}', '${item.dataset.materialId}')">🗑️ Delete</button>
+    `;
 }
 
 // 載入分類公告（教師端）
@@ -1025,6 +1116,7 @@ function createLiveRoomFromCourse() {
         showToast('Failed to create. Please try again later.');
     });
 }
+
 function openPdfViewer(materialId, filename) {
     const viewer = document.createElement('div');
 
@@ -1052,42 +1144,7 @@ function openPdfViewer(materialId, filename) {
 
     document.body.appendChild(viewer);
 }
-async function uploadCourseMaterial() {
-    if (!currentCourseId) {
-        showToast('Please enter a course from the course list first.');
-        return;
-    }
 
-    const fileInput = document.getElementById('material-file');
-    const file = fileInput.files[0];
-    if (!file) {
-        showToast('Please select a file to upload.');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('material', file);
-
-    try {
-        const res = await fetch(`/api/course/${currentCourseId}/materials`, {
-            method: 'POST',
-            body: formData
-        });
-
-        const result = await res.json();
-        if (result.success) {
-            showToast(`Material"「${file.name}」"uploaded successfully. Notification sent!`);
-            fileInput.value = '';
-            await loadCategorizedAnnouncements(currentCourseId);
-            setTimeout(() => location.reload(), 1500); 
-        } else {
-            showToast('Upload failed:' + (result.error || ''));
-        }
-    } catch (error) {
-        console.error(error);
-        showToast('Upload failed.');
-    }
-}
 async function deleteCourseMaterial(courseId, materialId) {
     if (!confirm('Are you sure you want to delete this material and remove related notifications?')) return;
 
