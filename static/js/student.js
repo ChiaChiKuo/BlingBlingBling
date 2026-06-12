@@ -559,17 +559,19 @@ async function loadCourseMaterials(courseId) {
         container.innerHTML = materials.map(mat => `
             <div class="announce-item" style="padding: 12px;">
                 <div class="announce-content">
-                    <div class="announce-title">${escapeHtml(mat.filename)}</div>
-                    <div class="announce-desc" style="margin: 6px 0; color: #555;">Upload Time:${escapeHtml(mat.uploaded_at)}</div>
-                    ${mat.filename.toLowerCase().endsWith('.pdf') ? `
-                        <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 8px;">
-                            Preview PDF
-                        </button>
-                    ` : ''}
-
-                    <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none; display: inline-flex;">
-                        Download Material
-                    </a>
+                    <div class="announce-title">${escapeHtml(mat.title || mat.filename)}</div>
+                    ${mat.description ? `<div class="announce-desc" style="margin:4px 0;color:#555;">${escapeHtml(mat.description)}</div>` : ''}
+                    <div class="announce-desc" style="margin:6px 0;color:#888;">📎 ${escapeHtml(mat.filename)} &nbsp;|&nbsp; ${escapeHtml(mat.uploaded_at)}</div>
+                    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                        ${mat.filename.toLowerCase().endsWith('.pdf') ? `
+                            <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="font-size:13px;padding:6px 14px;">
+                                👁️ Preview PDF
+                            </button>
+                        ` : ''}
+                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none;display:inline-flex;font-size:13px;padding:6px 14px;">
+                            ⬇️ Download
+                        </a>
+                    </div>
                 </div>
             </div>
         `).join('');

@@ -17,7 +17,8 @@ def get_db():
     conn = sqlite3.connect(os.path.join(BASE_DIR, 'project.db'))
     conn.row_factory = sqlite3.Row
     conn.execute("""
-        CREATE TABLE IF NOT EXISTS CourseMaterial(
+        CREATE TABLE IF NOT EXISTS Material(
+            module_id CHAR(10) NOT NULL,
             material_id CHAR(10) NOT NULL PRIMARY KEY,
             course_id CHAR(10) NOT NULL,
             filename VARCHAR NOT NULL,
@@ -554,10 +555,13 @@ def get_course_detail(course_id):
     modules = cursor.fetchall()
 
     cursor.execute("""
-        SELECT material_id, filename, uploaded_at, uploaded_by
-        FROM CourseMaterial
-        WHERE course_id = ?
-        ORDER BY uploaded_at DESC
+    SELECT mat.material_id, mat.filename, mat.uploaded_at, mat.uploaded_by,
+           m.module_id, m.title, m.description
+    FROM Material mat
+    LEFT JOIN Module m ON mat.module_id = m.module_id
+    WHERE mat.course_id = ?
+    ORDER BY mat.uploaded_at DESC
+
     """, (course_id,))
     materials = cursor.fetchall()
 
@@ -586,30 +590,44 @@ def get_course_materials(course_id):
         if not file or file.filename == "":
             return jsonify({"error": "No file selected"}), 400
 
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+
+        if not title:
+            return jsonify({"error": "Title is required"}), 400
+
         conn = get_db()
         cursor = conn.cursor()
         cursor.execute(
             "SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
             (session["user_id"], course_id)
         )
-        course_owner = cursor.fetchone()
-        if not course_owner:
+        if not cursor.fetchone():
             conn.close()
             return jsonify({"error": "Unauthorized"}), 403
 
+        # 建立 Module
+        module_id = str(uuid.uuid4())[:8]
+        cursor.execute(
+            "INSERT INTO Module (module_id, course_id, title, description) VALUES (?, ?, ?, ?)",
+            (module_id, course_id, title, description)
+        )
+
+        # 儲存檔案
         filename = secure_filename(file.filename)
         material_id = str(uuid.uuid4())[:8]
         stored_filename = f"{material_id}_{filename}"
         course_folder = os.path.join(UPLOAD_FOLDER, course_id)
         os.makedirs(course_folder, exist_ok=True)
-        file_path = os.path.join(course_folder, stored_filename)
-        file.save(file_path)
+        file.save(os.path.join(course_folder, stored_filename))
 
         uploaded_at = time.strftime("%Y-%m-%d %H:%M:%S")
         cursor.execute(
-            "INSERT INTO CourseMaterial (material_id, course_id, filename, stored_filename, uploaded_at, uploaded_by) VALUES (?, ?, ?, ?, ?, ?)",
-            (material_id, course_id, filename, stored_filename, uploaded_at, session["user_id"])
+            "INSERT INTO Material (material_id, course_id, module_id, filename, stored_filename, uploaded_at, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (material_id, course_id, module_id, filename, stored_filename, uploaded_at, session["user_id"])
         )
+
+        # 發公告
         notification_id = str(uuid.uuid4())[:8]
         cursor.execute(
             "INSERT INTO Notification (teacher_id, notification_id, course_id, type, information, due_date) VALUES (?, ?, ?, ?, ?, ?)",
@@ -618,32 +636,38 @@ def get_course_materials(course_id):
                 notification_id,
                 course_id,
                 'announcement',
-                f'The course material\n\n「{filename}」has been uploaded. Please go to the Course Materials section to download it.。',
+                f'{title}\n\n{description}\n\n「{filename}」has been uploaded. Please go to the Course Materials section to download it.',
                 time.strftime("%Y-%m-%d")
             )
         )
+
         conn.commit()
         conn.close()
 
         return jsonify({
             "success": True,
             "material_id": material_id,
-            "filename": filename,
-            "download_url": url_for('download_material', material_id=material_id)
+            "module_id": module_id,
+            "filename": filename
         })
 
+    # GET
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT material_id, filename, uploaded_at, uploaded_by
-        FROM CourseMaterial
-        WHERE course_id = ?
-        ORDER BY uploaded_at DESC
+        SELECT mat.material_id, mat.filename, mat.uploaded_at, mat.uploaded_by,
+               m.module_id, m.title, m.description
+        FROM Material mat
+        LEFT JOIN Module m ON mat.module_id = m.module_id
+        WHERE mat.course_id = ?
+        ORDER BY mat.uploaded_at DESC
     """, (course_id,))
     materials = cursor.fetchall()
     conn.close()
 
     return jsonify({"materials": [dict(m) for m in materials]})
+
+
 
 @app.route('/materials/<material_id>/download')
 def download_material(material_id):
@@ -653,7 +677,7 @@ def download_material(material_id):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT course_id, filename, stored_filename FROM CourseMaterial WHERE material_id = ?",
+        "SELECT course_id, filename, stored_filename FROM Material WHERE material_id = ?",
         (material_id,)
     )
     material = cursor.fetchone()
@@ -688,6 +712,7 @@ def download_material(material_id):
     conn.close()
     material_folder = os.path.join(UPLOAD_FOLDER, course_id)
     return send_from_directory(material_folder, stored_filename, as_attachment=True, download_name=filename)
+
 @app.route('/materials/<material_id>/preview')
 def preview_material(material_id):
     if "user_id" not in session:
@@ -696,55 +721,36 @@ def preview_material(material_id):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT course_id, filename, stored_filename FROM CourseMaterial WHERE material_id = ?",
+        "SELECT course_id, filename, stored_filename FROM Material WHERE material_id = ?",
         (material_id,)
     )
     material = cursor.fetchone()
-
     if not material:
         conn.close()
         return jsonify({"error": "Material not found"}), 404
 
-    course_id = material["course_id"]
-    filename = material["filename"]
-    stored_filename = material["stored_filename"]
-
-    if not filename.lower().endswith(".pdf"):
+    if not material["filename"].lower().endswith(".pdf"):
         conn.close()
         return jsonify({"error": "Only PDF files can be previewed"}), 400
 
     if session["role"] == "student":
-        cursor.execute(
-            "SELECT 1 FROM Enrolls WHERE student_id = ? AND course_id = ?",
-            (session["user_id"], course_id)
-        )
+        cursor.execute("SELECT 1 FROM Enrolls WHERE student_id = ? AND course_id = ?",
+                       (session["user_id"], material["course_id"]))
         if not cursor.fetchone():
             conn.close()
             return jsonify({"error": "Unauthorized"}), 403
-
     elif session["role"] == "teacher":
-        cursor.execute(
-            "SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
-            (session["user_id"], course_id)
-        )
+        cursor.execute("SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
+                       (session["user_id"], material["course_id"]))
         if not cursor.fetchone():
             conn.close()
             return jsonify({"error": "Unauthorized"}), 403
-
-    else:
-        conn.close()
-        return jsonify({"error": "Unauthorized"}), 403
 
     conn.close()
+    material_folder = os.path.join(UPLOAD_FOLDER, material["course_id"])
+    return send_from_directory(material_folder, material["stored_filename"],
+                               as_attachment=False, mimetype="application/pdf")
 
-    material_folder = os.path.join(UPLOAD_FOLDER, course_id)
-
-    return send_from_directory(
-        material_folder,
-        stored_filename,
-        as_attachment=False,
-        mimetype="application/pdf"
-    )
 @app.route("/api/notification_setting", methods=["GET"])
 def get_notification_setting():
     if "user_id" not in session or session["role"] != "student":
@@ -971,40 +977,100 @@ def delete_material(course_id, material_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    # 確認是這個老師的課
     cursor.execute("SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
                    (session["user_id"], course_id))
     if not cursor.fetchone():
         conn.close()
         return jsonify({"error": "Unauthorized"}), 403
 
-    # 取得檔案資訊
-    cursor.execute("SELECT stored_filename FROM CourseMaterial WHERE material_id = ? AND course_id = ?",
+    cursor.execute("SELECT stored_filename, module_id FROM Material WHERE material_id = ? AND course_id = ?",
                    (material_id, course_id))
     mat = cursor.fetchone()
     if not mat:
         conn.close()
         return jsonify({"error": "Not found"}), 404
 
-    # 刪除實體檔案
     file_path = os.path.join(UPLOAD_FOLDER, course_id, mat["stored_filename"])
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    # 刪除資料庫紀錄
-    cursor.execute("DELETE FROM CourseMaterial WHERE material_id = ?", (material_id,))
+    cursor.execute("DELETE FROM Material WHERE material_id = ?", (material_id,))
 
-    # 刪除對應通知
+    if mat["module_id"]:
+        cursor.execute("SELECT COUNT(*) as cnt FROM Material WHERE module_id = ?", (mat["module_id"],))
+        row = cursor.fetchone()
+        if row["cnt"] == 0:
+            cursor.execute("DELETE FROM Module WHERE module_id = ?", (mat["module_id"],))
+
+    # 刪除對應的通知
+    filename = mat["stored_filename"].split("_", 1)[-1]
     cursor.execute("""
-        DELETE FROM Notification 
-        WHERE course_id = ? AND type = 'announcement 
+        DELETE FROM Notification
+        WHERE course_id = ? AND type = 'announcement'
         AND information LIKE ?
-    """, (course_id, f'%{mat["stored_filename"].split("_", 1)[-1]}%'))
-
+    """, (course_id, f'%{filename}%'))
     conn.commit()
     conn.close()
-
     return jsonify({"success": True})
+
+@app.route("/api/course/<course_id>/materials/<material_id>/module", methods=["PUT"])
+def update_material_module(course_id, material_id):
+    if "user_id" not in session or session["role"] != "teacher":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    title = data.get("title", "").strip()
+    description = data.get("description", "").strip()
+
+    if not title:
+        return jsonify({"error": "Title is required"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT 1 FROM Teaches WHERE teacher_id = ? AND course_id = ?",
+                   (session["user_id"], course_id))
+    if not cursor.fetchone():
+        conn.close()
+        return jsonify({"error": "Unauthorized"}), 403
+
+    cursor.execute("SELECT module_id FROM Material WHERE material_id = ? AND course_id = ?",
+                   (material_id, course_id))
+    row = cursor.fetchone()
+    if not row or not row["module_id"]:
+        conn.close()
+        return jsonify({"error": "Material or module not found"}), 404
+
+    cursor.execute("""
+        UPDATE Module SET title = ?, description = ?
+        WHERE module_id = ? AND course_id = ?
+    """, (title, description, row["module_id"], course_id))
+
+    cursor.execute(
+        "SELECT filename FROM Material WHERE material_id = ? AND course_id = ?",
+        (material_id, course_id)
+    )
+    mat_row = cursor.fetchone()
+    if mat_row:
+        filename = mat_row["filename"]
+        info_parts = [title]
+        if description:
+            info_parts.append(description)
+        info_parts.append(f'「{filename}」has been uploaded. Please go to the Course Materials section to download it.')
+        new_information = '\n\n'.join(info_parts)
+        cursor.execute("""
+            UPDATE Notification
+            SET information = ?
+            WHERE course_id = ?
+              AND teacher_id = ?
+              AND type = 'announcement'
+              AND information LIKE ?
+        """, (new_information, course_id, session["user_id"], f'%{filename}%'))
+        print(f"[DEBUG] updated rows: {cursor.rowcount}, filename: {filename}")
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
 
 if __name__ == "__main__":
     app.run(debug=True)
