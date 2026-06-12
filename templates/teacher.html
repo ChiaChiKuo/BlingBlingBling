@@ -9,9 +9,7 @@
 </head>
 <body onload="initializeApp()">
 
-<!-- ════════════════════════════════════
-     LOGIN PAGE
-════════════════════════════════════ -->
+<!-- LOGIN PAGE -->
 <div id="login-page">
   <span class="login-lang">English ▾</span>
 
@@ -74,9 +72,7 @@
 </div>
 
 
-<!-- ════════════════════════════════════
-     APP PAGE
-════════════════════════════════════ -->
+<!-- APP PAGE -->
 <div id="app-page">
 
   <!-- TOP NAV -->
@@ -128,16 +124,16 @@
       </div>
            <div class="sidebar-section-title">📊 Assessment & Grades</div>
 
-      <div class="sidebar-item" id="nav-grade-management" onclick="goTeacherAnnouncementType('grade-management', '成績公告', '成績管理')">
+      <div class="sidebar-item" id="nav-grade-management" onclick="showToast('Opening Grade Management...')">
         <span class="si-icon">📝</span> Grade Management
       </div>
-      <div class="sidebar-item" id="nav-homework-management" onclick="goTeacherAnnouncementType('homework-management', '作業通知', '作業管理')">
+      <div class="sidebar-item" id="nav-homework-management" onclick="showToast('Opening assignment management...')">
         <span class="si-icon">📋</span> Assignment Management
       </div>
-      <div class="sidebar-item" onclick="showToast('Opening interactive Materials...')">
+      <div class="sidebar-item" onclick="showToast('Opening interactive materials...')">
         <span class="si-icon">🎮</span> Interactive Materials
       </div>
-      <div class="sidebar-item" onclick="showToast('Opening question Bank...')">
+      <div class="sidebar-item" onclick="showToast('Opening question bank...')">
         <span class="si-icon">📝</span> Question Bank
       </div>
       <div class="sidebar-item" onclick="showToast('Opening rubrics...')">
@@ -188,12 +184,12 @@
             </select>
             <!-- 公告類型下拉選單 -->
             <select id="announce_type" class="settings-input" style="width:100%; margin-bottom: 16px;">
-              <option value="一般公告">📢 General Announcement</option>
-              <option value="作業通知">📝 Assignment Notification</option>
-              <option value="考試通知">📋 Exam Notification</option>
-              <option value="課程異動通知">🔄 Course Change Notification</option>
-              <option value="討論區">💬 Discussion Board</option>
-              <option value="成績公告">📊 Grade Announcement</option>
+              <option value="announcement">📢 General Announcement</option>
+              <option value="assignment">📝 Assignment Notification</option>
+              <option value="exam">📋 Exam Notification</option>
+              <option value="courses_change">🔄 Course Change Notification</option>
+              <option value="discussion">💬 Discussion Board</option>
+              <option value="scores">📊 Grade Announcement</option>
             </select>
             <input type="text" id="announce_title" placeholder="Announcement Title" class="settings-input" style="width:100%; margin-bottom: 16px;">
             <textarea id="announce_content" placeholder="Announcement Content..." class="settings-input" style="width:100%; margin-bottom: 16px; min-height: 120px;"></textarea>
@@ -384,21 +380,35 @@
               </div>
             </div>
 
-            <div id="course-materials" class="course-tab-content" style="display: none;">
-              <div class="settings-section">
-                <h3>Material Upload & Management</h3>
-                <p style="color: #555; margin-bottom: 12px;">Upload course materials for students to download from "My Courses".</p>
-                <label for="material-file" class="btn-primary" style="display:inline-flex; margin-bottom: 10px;">
-  Choose File
-</label>
-<span id="selected-file-name" style="margin-left: 10px; color: #666;">No file selected</span>
-<input type="file" id="material-file" style="display:none;" onchange="updateFileName(this)">
-                <button class="btn-primary" style="margin-bottom: 20px;" onclick="uploadCourseMaterial()">Upload Material</button>
-                <div id="uploaded-materials-list" class="announce-list">
-                  <p style="color: #999;">Loading materials...</p>
+          <div id="course-materials" class="course-tab-content" style="display: none;">
+            <div class="settings-section">
+              <h3>Material Upload & Management</h3>
+              <p style="color: #555; margin-bottom: 12px;">Upload course materials for students to download from "My Courses".</p>
+
+              <div class="material-upload-form">
+                <div style="margin-bottom: 12px;">
+                  <label class="material-form-label">Module Title <span style="color:red">*</span></label>
+                  <input type="text" id="material-title" class="settings-input" style="width:100%;" placeholder="e.g. Week 1 - Introduction">
                 </div>
+                <div style="margin-bottom: 12px;">
+                  <label class="material-form-label">Description</label>
+                  <textarea id="material-description" class="settings-input" style="width:100%; min-height:80px; resize:vertical;" placeholder="Brief description of this module..."></textarea>
+                </div>
+                <div style="margin-bottom: 16px; display:flex; align-items:center; gap:12px;">
+                  <label for="material-file" class="btn-primary" style="display:inline-flex; cursor:pointer;">Choose File</label>
+                  <span id="selected-file-name" style="color: #666;">No file selected</span>
+                  <input type="file" id="material-file" style="display:none;" onchange="updateFileName(this)">
+                </div>
+                <button class="btn-primary" onclick="uploadCourseMaterial()">⬆️ Upload Material</button>
+              </div>
+
+              <hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
+              <h4 style="margin-bottom: 12px; color: #555;">Uploaded Materials</h4>
+              <div id="uploaded-materials-list" class="announce-list">
+                <p style="color: #999;">Loading materials...</p>
               </div>
             </div>
+          </div>
 
           <!-- 一般公告 -->
           <div id="course-general" class="course-tab-content" style="display: none;">
@@ -466,12 +476,12 @@
               <div style="margin-bottom: 16px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 500;">Announcement Type</label>
                 <select id="publish-type" class="settings-input" style="width: 100%;">
-                  <option value="一般公告">📢 General Announcement</option>
-                  <option value="作業通知">📝 Assignment Notification</option>
-                  <option value="考試通知">📋 Exam Notification</option>
-                  <option value="課程異動通知">🔄 Course Change Notification</option>
-                  <option value="討論區">💬 Discussion Board</option>
-                  <option value="成績公告">📊 Grade Announcement</option>
+                  <option value="announcement">📢 General Announcement</option>
+                  <option value="assignment">📝 Assignment Notification</option>
+                  <option value="exam">📋 Exam Notification</option>
+                  <option value="courses_change">🔄 Course Change Notification</option>
+                  <option value="discussion">💬 Discussion Board</option>
+                  <option value="scores">📊 Grade Announcement</option>
                 </select>
               </div>
                 <div style="margin-bottom: 16px;">

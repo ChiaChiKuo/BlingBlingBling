@@ -1,4 +1,4 @@
-// ========== 初始化 ==========
+// 初始化
 function initializeApp() {
     if (isLoggedIn) {
         document.getElementById('login-page').style.display = 'none';
@@ -7,7 +7,7 @@ function initializeApp() {
         
         // 如果當前顯示的是課程頁面，載入課程
 
-        goPage('courses'); // ⭐⭐⭐ 加這行
+        goPage('courses');
 
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
@@ -23,7 +23,7 @@ function initializeApp() {
         document.getElementById('app-page').style.display = 'none';
     }
 }
-// ========== 登入 ==========
+// 登入
 function doLogin() {
     const u = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value;
@@ -49,7 +49,7 @@ function doLogin() {
     }
 }
 
-// ========== 載入課程 ==========
+// 載入課程
 async function loadCourses() {
     const container = document.getElementById('courses-container');
     const countElem = document.getElementById('course-count');
@@ -95,7 +95,7 @@ function displayCourses(courses) {
             <div class="course-body">
                 <div class="course-name">${escapeHtml(course.course_name)}</div>
                 <div class="course-dept">Course Code:${escapeHtml(course.course_id)}</div>
-                <div class="course-stats"><span>📖 ${course.credits || 3} 學分</span><span>📅 ${course.semester || '進行中'}</span></div>
+                <div class="course-stats"><span>📖 ${course.credits || 3} credits</span><span>📅 ${course.semester || '進行中'}</span></div>
             </div>
         `;
         container.appendChild(card);
@@ -103,7 +103,7 @@ function displayCourses(courses) {
 
 }
 
-// ========== 側邊欄公告頁面 - 載入所有課程的公告 ==========
+// 側邊欄公告頁面 - 載入所有課程的公告
 async function loadAllAnnouncements() {
     const container = document.getElementById('announcements-list-general');
     const countElem = document.getElementById('announcement-count');
@@ -125,7 +125,7 @@ async function loadAllAnnouncements() {
         const data = await response.json();
         let announcements = data.announcements || [];
         
-        // 依照日期排序，最新的在前（若無日期則使用 comparator fallback）
+        // 依照日期排序，最新的在前(若無日期則使用 comparator fallback)
         announcements.sort(compareAnnouncementsDesc);
         
         if (countElem) {
@@ -163,7 +163,7 @@ async function loadAllAnnouncements() {
     }
 }
 
-// ========== 頁面切換 ==========
+// 頁面切換
 const pages = ['courses', 'announcements', 'settings', 'course-detail'];
 let currentAnnouncementType = '';
 
@@ -215,12 +215,12 @@ function goAnnouncementCategory(type) {
 
 function updateAnnouncementSubnav(type) {
     const subItems = {
-        '一般公告': document.getElementById('nav-announcements-general'),
-        '作業通知': document.getElementById('nav-announcements-homework'),
-        '考試通知': document.getElementById('nav-announcements-exam'),
-        '課程異動通知': document.getElementById('nav-announcements-course-change'),
-        '討論區': document.getElementById('nav-announcements-discussion'),
-        '成績公告': document.getElementById('nav-announcements-grade')
+        'announcement': document.getElementById('nav-announcements-general'),
+        'assignment': document.getElementById('nav-announcements-homework'),
+        'exam': document.getElementById('nav-announcements-exam'),
+        'courses_change': document.getElementById('nav-announcements-course-change'),
+        'discussion': document.getElementById('nav-announcements-discussion'),
+        'scores': document.getElementById('nav-announcements-grade')
     };
 
     Object.values(subItems).forEach(item => {
@@ -285,7 +285,7 @@ function renderAnnouncementList(announcements, type = '') {
 
     if (!container) return;
 
-    // 先確保以時間排序（確保最新在前）
+    // 先確保以時間排序(確保最新在前)
     announcements = (announcements || []).slice().sort(compareAnnouncementsDesc);
 
     if (!announcements.length) {
@@ -336,12 +336,38 @@ async function loadUnreadNotificationDots() {
 }
 
 function applyUnreadNotificationDots(unread) {
-    document.querySelectorAll('[data-notification-dot]').forEach(dot => {
+    if (!unread) return;
+
+    // 先處理側邊欄(Sidebar)的全域紅點，只要 Flask 說有未讀就亮
+    document.querySelectorAll('.sidebar-submenu [data-notification-dot], #announcement-submenu [data-notification-dot]').forEach(dot => {
         const category = dot.dataset.notificationDot;
         dot.classList.toggle('show', Boolean(unread[category]));
     });
-}
 
+    // 處理課程內頁的頁籤紅點
+    document.querySelectorAll('.course-tabs [data-notification-dot]').forEach(dot => {
+        const category = dot.dataset.notificationDot; // 例如 'exam'
+        const isBackendUnread = Boolean(unread[category]); // Flask 全域通知說有未讀
+
+        let shouldShowInnerDot = false;
+
+        // 如果 Flask 說全域有未讀，我們才進一步檢查目前這門課
+        if (isBackendUnread && currentCourseId) {
+            
+            // 看畫面上有沒有這門課、這個類型的公告，而且這個公告內部的紅點沒有 read 類別
+            const hasUnreadItem = document.querySelector(
+                `.announce-item[data-course-id="${currentCourseId}"][data-notification-type="${category}"] .announce-dot:not(.read)`
+            );
+
+            if (hasUnreadItem) {
+                shouldShowInnerDot = true;
+            }
+        }
+
+        // 只有當前這門課真的存在未讀公告時，內頁頁籤才會亮
+        dot.classList.toggle('show', shouldShowInnerDot);
+    });
+}
 async function markNotificationRead(notificationId, courseId, item) {
     if (!notificationId) return;
 
@@ -364,12 +390,12 @@ async function markNotificationRead(notificationId, courseId, item) {
     }
 }
 
-// ========== 登出 ==========
+// 登出
 function doLogout() {
     window.location.href = '/logout';
 }
 
-// ========== 更新個人資料 ==========
+// 更新個人資料
 async function updateProfile() {
     const nameInput = document.getElementById('profile-name');
     const emailInput = document.getElementById('profile-email');
@@ -423,7 +449,7 @@ function updateProfileDisplay(name) {
     }
 }
 
-// ========== 顯示提示 ==========
+// 顯示提示
 let toastTimer;
 function showToast(msg) {
     const t = document.getElementById('toast');
@@ -440,7 +466,7 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// 比較公告時間（穩定）：先比 due_date，沒有日期則 fallback 為 notification_id
+// 比較公告時間: 先比 due_date，沒有日期則 fallback 為 notification_id
 function compareAnnouncementsDesc(a, b) {
     const getTime = x => {
         if (!x) return 0;
@@ -454,7 +480,7 @@ function compareAnnouncementsDesc(a, b) {
     const ta = getTime(a);
     const tb = getTime(b);
     if (tb !== ta) return tb - ta;
-    // 最後 fallback：字串比較（避免不穩定排序）
+    // fallback: 字串比較
     if (a.notification_id && b.notification_id) return b.notification_id.localeCompare(a.notification_id);
     return 0;
 }
@@ -467,7 +493,7 @@ document.getElementById('login-user').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
 });
 
-// ========== 課程詳情功能 ==========
+// 課程詳情功能
 let currentCourseId = null;
 
 async function viewCourseDetail(courseId) {
@@ -489,6 +515,7 @@ async function viewCourseDetail(courseId) {
         console.error('載入課程詳情錯誤:', error);
         document.getElementById('course-description').innerHTML = `<div class="error-state">載入失敗：${error.message}<button onclick="viewCourseDetail('${courseId}')">重新載入</button></div>`;
     }
+    loadUnreadNotificationDots();
 }
 
 function displayCourseDetail(data) {
@@ -529,17 +556,19 @@ async function loadCourseMaterials(courseId) {
         container.innerHTML = materials.map(mat => `
             <div class="announce-item" style="padding: 12px;">
                 <div class="announce-content">
-                    <div class="announce-title">${escapeHtml(mat.filename)}</div>
-                    <div class="announce-desc" style="margin: 6px 0; color: #555;">Upload Time:${escapeHtml(mat.uploaded_at)}</div>
-                    ${mat.filename.toLowerCase().endsWith('.pdf') ? `
-                        <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="margin-right: 8px;">
-                            Preview PDF
-                        </button>
-                    ` : ''}
-
-                    <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none; display: inline-flex;">
-                        Download Material
-                    </a>
+                    <div class="announce-title">${escapeHtml(mat.title || mat.filename)}</div>
+                    ${mat.description ? `<div class="announce-desc" style="margin:4px 0;color:#555;">${escapeHtml(mat.description)}</div>` : ''}
+                    <div class="announce-desc" style="margin:6px 0;color:#888;">📎 ${escapeHtml(mat.filename)} &nbsp;|&nbsp; ${escapeHtml(mat.uploaded_at)}</div>
+                    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                        ${mat.filename.toLowerCase().endsWith('.pdf') ? `
+                            <button class="btn-primary" onclick="openPdfViewer('${encodeURIComponent(mat.material_id)}', '${escapeHtml(mat.filename)}')" style="font-size:13px;padding:6px 14px;">
+                                👁️ Preview PDF
+                            </button>
+                        ` : ''}
+                        <a class="btn-primary" href="/materials/${encodeURIComponent(mat.material_id)}/download" style="text-decoration:none;display:inline-flex;font-size:13px;padding:6px 14px;">
+                            ⬇️ Download
+                        </a>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -553,14 +582,12 @@ function displayAnnouncementsByType(announcements) {
     const sortedAnnouncements = [...announcements].sort(compareAnnouncementsDesc);
     
     const typeMapping = {
-        '公告': 'course-announcements-list-general',
-        '一般公告': 'course-announcements-list-general',
-        '線上課程': 'course-announcements-list-general',
-        '作業通知': 'course-announcements-list-homework',
-        '考試通知': 'course-announcements-list-exam',
-        '課程異動通知': 'course-announcements-list-courseChange',
-        '討論區': 'course-announcements-list-discussion',
-        '成績公告': 'course-announcements-list-grade'
+        'announcement': 'course-announcements-list-general',
+        'assignment': 'course-announcements-list-homework',
+        'exam': 'course-announcements-list-exam',
+        'courses_change': 'course-announcements-list-courseChange',
+        'discussion': 'course-announcements-list-discussion',
+        'scores': 'course-announcements-list-grade'
     };
     
     for (const containerId of Object.values(typeMapping)) {
@@ -654,8 +681,8 @@ function switchCourseTab(tabName, event) {
 }
 
 //通知按鈕狀態變化
-// ── 通知設定 ──
-const ALL_NOTIFICATION_TYPE = '全部通知';
+// 通知設定
+const ALL_NOTIFICATION_TYPE = 'all';
 
 function getNotificationToggles() {
   return Array.from(document.querySelectorAll('.notification-toggle'));
@@ -666,9 +693,20 @@ function getAllNotificationToggle() {
 }
 
 function getNotificationLabel(toggle) {
-  return toggle.closest('.settings-row')
-               .querySelector('.settings-label')
-               .childNodes[0].textContent.trim();
+  const text = toggle.closest('.settings-row')
+    .querySelector('.settings-label')
+    .textContent.trim();
+
+  const map = {
+    'General Announcements': 'announcement',
+    'Assignment Notifications': 'assignment',
+    'Exam Notifications': 'exam',
+    'Course Change Notifications': 'courses_change',
+    'Discussion Board': 'discussion',
+    'Grade Announcements': 'scores'
+  };
+
+  return map[text] || text;
 }
 
 function setToggleState(toggle, isOn) {

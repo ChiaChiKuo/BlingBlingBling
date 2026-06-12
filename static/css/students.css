@@ -21,7 +21,7 @@
     min-height: 100vh;
   }
 
-  /* ─── LOGIN ─── */
+  /* LOGIN */
   #login-page {
     min-height: 100vh;
     background: linear-gradient(135deg, #e8f5fb 0%, #d0eef8 40%, #b8e5f5 100%);
@@ -237,7 +237,7 @@
     z-index: 2;
   }
 
-  /* ─── APP SHELL ─── */
+  /* APP SHELL */
   #app-page { display: none; min-height: 100vh; }
 
   /* TOP NAV */

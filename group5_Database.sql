@@ -103,12 +103,6 @@ CREATE TABLE Module(
 );
 CREATE TABLE Material(
  module_id CHAR(10) NOT NULL,
- material VARCHAR NOT NULL,
- PRIMARY KEY (material,module_id),
- FOREIGN KEY (module_id) REFERENCES Module(module_id)
- ON DELETE CASCADE ON UPDATE CASCADE
-);
-CREATE TABLE CourseMaterial(
  material_id CHAR(10) NOT NULL PRIMARY KEY,
  course_id CHAR(10) NOT NULL,
  filename VARCHAR NOT NULL,
@@ -116,16 +110,18 @@ CREATE TABLE CourseMaterial(
  uploaded_at TEXT NOT NULL,
  uploaded_by CHAR(10) NOT NULL,
  FOREIGN KEY (course_id) REFERENCES Course(course_id)
- ON DELETE CASCADE ON UPDATE CASCADE
+ ON DELETE CASCADE ON UPDATE CASCADE,
+ FOREIGN KEY (module_id) REFERENCES Module(module_id)
+ ON DELETE SET NULL
 );
 INSERT INTO Student VALUES ('B0111111111','Amy','B011111111@nsysu.student.edu.tw','Amy111');
 INSERT INTO Student VALUES ('B0111111112','Andy','B011111112@nsysu.student.edu.tw','Andy112');
 INSERT INTO Teacher VALUES ('T123456789','pclo','T123456789@nsysu.student.edu.tw','T12345pclo');
 INSERT INTO Teacher VALUES ('T192837465','Harry','T192837465@nsysu.student.edu.tw','T19283Har');
-INSERT INTO Course VALUES ('MIS205', FALSE, '資料庫管理', '114_2', '一堂非常棒的課');
-INSERT INTO Course VALUES ('MIS304', FALSE, '管理資訊系統', '114_2', '管理資訊系統核心課程');
-INSERT INTO Course VALUES ('MIS206', FALSE, '商事法', '114_2', '商事法基礎概念');
-INSERT INTO Course VALUES ('CSS137', TRUE, '資料視覺化', '114_2', '資料視覺化工具與實作');
+INSERT INTO Course VALUES ('MIS205', FALSE, 'Database Management', '114_2', 'an excellent class');
+INSERT INTO Course VALUES ('MIS304', FALSE, 'Management Information Systems', '114_2', 'Core course in Management Information Systems');
+INSERT INTO Course VALUES ('MIS206', FALSE, 'Commercial Law', '114_2', 'Basic concepts of Commercial Law');
+INSERT INTO Course VALUES ('CSS137', TRUE, 'Data Visualization', '114_2', 'Tools and Practice of Data Visualization');
 INSERT INTO Teaches VALUES ('MIS205', 'T123456789');
 INSERT INTO Teaches VALUES ('MIS304', 'T192837465');
 INSERT INTO Teaches VALUES ('MIS206', 'T123456789');
@@ -136,22 +132,23 @@ INSERT INTO Enrolls VALUES ('B0111111111', '0000000003', 'CSS137', '1');
 INSERT INTO Enrolls VALUES ('B0111111112', '0000000004', 'MIS206', '2');
 INSERT INTO Enrolls VALUES ('B0111111112', '0000000005', 'MIS304', '3');
 
-INSERT INTO Setting VALUES ('B0111111111', TRUE, '全部通知');
-INSERT INTO Setting VALUES ('B0111111111', TRUE, '新公告通知');
-INSERT INTO Setting VALUES ('B0111111111', TRUE, '作業通知');
-INSERT INTO Setting VALUES ('B0111111111', TRUE, '考試通知');
-INSERT INTO Setting VALUES ('B0111111111', TRUE, '課程異動通知');
-INSERT INTO Setting VALUES ('B0111111111', TRUE, '討論區回覆');
-INSERT INTO Setting VALUES ('B0111111111', TRUE, '成績公告');
-INSERT INTO Setting VALUES ('B0111111112', TRUE, '全部通知');
-INSERT INTO Setting VALUES ('B0111111112', TRUE, '新公告通知');
-INSERT INTO Setting VALUES ('B0111111112', TRUE, '作業通知');
-INSERT INTO Setting VALUES ('B0111111112', TRUE, '考試通知');
-INSERT INTO Setting VALUES ('B0111111112', TRUE, '課程異動通知');
-INSERT INTO Setting VALUES ('B0111111112', TRUE, '討論區回覆');
-INSERT INTO Setting VALUES ('B0111111112', TRUE, '成績公告');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, 'all');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, 'announcement');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, 'assignment');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, 'exam');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, 'courses_change');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, 'discussion');
+INSERT INTO Setting VALUES ('B0111111111', TRUE, 'scores');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, 'all');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, 'announcement');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, 'assignment');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, 'exam');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, 'courses_change');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, 'discussion');
+INSERT INTO Setting VALUES ('B0111111112', TRUE, 'scores');
 
-INSERT INTO Notification VALUES ('T192837465', 'a', 'MIS304', '一般公告', '大家都A+', '2026-06-11');
-INSERT INTO Notification VALUES ('T192837465', 'b', 'MIS304', '作業通知', '作業作業', '2026-06-07');
-INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', '考試通知', '期末考爆爆王', '2026-06-03');
-INSERT INTO Notification VALUES ('T192837465', 'd', 'MIS205', '討論區', 'Do you like coding?', '2026-06-10');
+INSERT INTO Notification VALUES ('T123456789', 'a', 'MIS304', 'announcement', 'Everyone got an A+', '2026-06-11');
+INSERT INTO Notification VALUES ('T123456789', 'b', 'MIS304', 'assignment', 'Homework', '2026-06-07');
+INSERT INTO Notification VALUES ('T123456789', 'c', 'MIS205', 'exam', 'Crazy final exam', '2026-06-03');
+INSERT INTO Notification VALUES ('T123456789', 'd', 'MIS205', 'discussion', 'Do you like coding?', '2026-06-10');
+INSERT INTO Notification VALUES ('T123456789', 'e', 'MIS205', 'courses_change', 'The final project was canceled, yay~~', '2026-06-10');
