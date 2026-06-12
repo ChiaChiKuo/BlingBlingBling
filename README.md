@@ -84,22 +84,18 @@ NSYSU-Cyber-University/
 │   ├── css/                    #   login.css · students.css · teacher.css
 │   └── js/                     #   student.js · teacher.js
 │
-├── uploads/materials/          # Uploaded course files (stored on disk)
-│
-└── images/                     # Database design diagrams
-    ├── ERD REVISED.png                 # Entity-Relationship diagram
-    ├── RELATIONAL SCHEMA REVISED.png   # Relational schema (tables, PK/FK)
-    └── NORMALIZATION REVISED.png       # Functional dependencies / normalization
+└── uploads/materials/          # Uploaded course files (created at runtime; gitignored)
 ```
 
 ### Database design
 
-The schema covers students, teachers, courses, enrolments, announcements (with read-tracking),
-notification settings, modules, and course materials. See the diagrams in [`images/`](images/):
-
-- **ER diagram:** [`images/ERD REVISED.png`](images/ERD%20REVISED.png)
-- **Relational schema:** [`images/RELATIONAL SCHEMA REVISED.png`](images/RELATIONAL%20SCHEMA%20REVISED.png)
-- **Normalization (functional dependencies):** [`images/NORMALIZATION REVISED.png`](images/NORMALIZATION%20REVISED.png)
+The schema (defined in [`group5_Database.sql`](group5_Database.sql)) is a normalized relational
+design in **third normal form**. The core entities are **Student**, **Teacher**, and **Course**.
+Many-to-many relationships are resolved with bridge tables — **Teaches** (teacher ↔ course) and
+**Enrolls** (student ↔ course, which also stores the grade). Supporting tables include
+**Notification** (announcements), **Notification_Read** (per-student read receipts that power the
+unread badges), **Setting** (notification preferences), **Module**, **Textbook**, **Material**,
+and **CourseMaterial** (uploaded files).
 
 ---
 
