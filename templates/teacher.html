@@ -9,9 +9,7 @@
 </head>
 <body onload="initializeApp()">
 
-<!-- ════════════════════════════════════
-     LOGIN PAGE
-════════════════════════════════════ -->
+<!-- LOGIN PAGE -->
 <div id="login-page">
   <span class="login-lang">English ▾</span>
 
@@ -74,9 +72,7 @@
 </div>
 
 
-<!-- ════════════════════════════════════
-     APP PAGE
-════════════════════════════════════ -->
+<!-- APP PAGE -->
 <div id="app-page">
 
   <!-- TOP NAV -->
@@ -128,16 +124,16 @@
       </div>
            <div class="sidebar-section-title">📊 Assessment & Grades</div>
 
-      <div class="sidebar-item" id="nav-grade-management" onclick="goTeacherAnnouncementType('grade-management', 'scores')">
+      <div class="sidebar-item" id="nav-grade-management" onclick="showToast('Opening Grade Management...')">
         <span class="si-icon">📝</span> Grade Management
       </div>
-      <div class="sidebar-item" id="nav-homework-management" onclick="goTeacherAnnouncementType('homework-management', 'assignment')">
+      <div class="sidebar-item" id="nav-homework-management" onclick="showToast('Opening assignment management...')">
         <span class="si-icon">📋</span> Assignment Management
       </div>
-      <div class="sidebar-item" onclick="showToast('Opening interactive Materials...')">
+      <div class="sidebar-item" onclick="showToast('Opening interactive materials...')">
         <span class="si-icon">🎮</span> Interactive Materials
       </div>
-      <div class="sidebar-item" onclick="showToast('Opening question Bank...')">
+      <div class="sidebar-item" onclick="showToast('Opening question bank...')">
         <span class="si-icon">📝</span> Question Bank
       </div>
       <div class="sidebar-item" onclick="showToast('Opening rubrics...')">

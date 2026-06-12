@@ -1,4 +1,4 @@
-// ========== 初始化 ==========
+// 初始化
 function initializeApp() {
     if (isLoggedIn) {
         document.getElementById('login-page').style.display = 'none';
@@ -7,7 +7,7 @@ function initializeApp() {
         
         // 如果當前顯示的是課程頁面，載入課程
 
-        goPage('courses'); // ⭐⭐⭐ 加這行
+        goPage('courses');
 
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
@@ -23,7 +23,7 @@ function initializeApp() {
         document.getElementById('app-page').style.display = 'none';
     }
 }
-// ========== 登入 ==========
+// 登入
 function doLogin() {
     const u = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value;
@@ -49,7 +49,7 @@ function doLogin() {
     }
 }
 
-// ========== 載入課程 ==========
+// 載入課程
 async function loadCourses() {
     const container = document.getElementById('courses-container');
     const countElem = document.getElementById('course-count');
@@ -103,7 +103,7 @@ function displayCourses(courses) {
 
 }
 
-// ========== 側邊欄公告頁面 - 載入所有課程的公告 ==========
+// 側邊欄公告頁面 - 載入所有課程的公告
 async function loadAllAnnouncements() {
     const container = document.getElementById('announcements-list-general');
     const countElem = document.getElementById('announcement-count');
@@ -125,7 +125,7 @@ async function loadAllAnnouncements() {
         const data = await response.json();
         let announcements = data.announcements || [];
         
-        // 依照日期排序，最新的在前（若無日期則使用 comparator fallback）
+        // 依照日期排序，最新的在前(若無日期則使用 comparator fallback)
         announcements.sort(compareAnnouncementsDesc);
         
         if (countElem) {
@@ -163,7 +163,7 @@ async function loadAllAnnouncements() {
     }
 }
 
-// ========== 頁面切換 ==========
+// 頁面切換
 const pages = ['courses', 'announcements', 'settings', 'course-detail'];
 let currentAnnouncementType = '';
 
@@ -285,7 +285,7 @@ function renderAnnouncementList(announcements, type = '') {
 
     if (!container) return;
 
-    // 先確保以時間排序（確保最新在前）
+    // 先確保以時間排序(確保最新在前)
     announcements = (announcements || []).slice().sort(compareAnnouncementsDesc);
 
     if (!announcements.length) {
@@ -338,15 +338,13 @@ async function loadUnreadNotificationDots() {
 function applyUnreadNotificationDots(unread) {
     if (!unread) return;
 
-    // 1. 先處理側邊欄（Sidebar）的全域紅點，只要 Flask 說有未讀就亮
+    // 先處理側邊欄(Sidebar)的全域紅點，只要 Flask 說有未讀就亮
     document.querySelectorAll('.sidebar-submenu [data-notification-dot], #announcement-submenu [data-notification-dot]').forEach(dot => {
         const category = dot.dataset.notificationDot;
         dot.classList.toggle('show', Boolean(unread[category]));
     });
 
-    // 2. 處理課程內頁的頁籤紅點
-    // 💡 關鍵：我們直接去看目前畫面上「由 Flask 渲染出來的公告項目」
-    // 這樣不管是在登入時、重新整理時、還是切換課程時，都不會因為非同步抓不到而熄滅！
+    // 處理課程內頁的頁籤紅點
     document.querySelectorAll('.course-tabs [data-notification-dot]').forEach(dot => {
         const category = dot.dataset.notificationDot; // 例如 'exam'
         const isBackendUnread = Boolean(unread[category]); // Flask 全域通知說有未讀
@@ -356,8 +354,7 @@ function applyUnreadNotificationDots(unread) {
         // 如果 Flask 說全域有未讀，我們才進一步檢查目前這門課
         if (isBackendUnread && currentCourseId) {
             
-            // 🔍 我們直接用最簡單的屬性選擇器，看畫面上有沒有這門課、這個類型的公告
-            // 而且這個公告內部的紅點「沒有 read 類別」（代表真的未讀）
+            // 看畫面上有沒有這門課、這個類型的公告，而且這個公告內部的紅點沒有 read 類別
             const hasUnreadItem = document.querySelector(
                 `.announce-item[data-course-id="${currentCourseId}"][data-notification-type="${category}"] .announce-dot:not(.read)`
             );
@@ -393,12 +390,12 @@ async function markNotificationRead(notificationId, courseId, item) {
     }
 }
 
-// ========== 登出 ==========
+// 登出
 function doLogout() {
     window.location.href = '/logout';
 }
 
-// ========== 更新個人資料 ==========
+// 更新個人資料
 async function updateProfile() {
     const nameInput = document.getElementById('profile-name');
     const emailInput = document.getElementById('profile-email');
@@ -452,7 +449,7 @@ function updateProfileDisplay(name) {
     }
 }
 
-// ========== 顯示提示 ==========
+// 顯示提示
 let toastTimer;
 function showToast(msg) {
     const t = document.getElementById('toast');
@@ -469,7 +466,7 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// 比較公告時間（穩定）：先比 due_date，沒有日期則 fallback 為 notification_id
+// 比較公告時間: 先比 due_date，沒有日期則 fallback 為 notification_id
 function compareAnnouncementsDesc(a, b) {
     const getTime = x => {
         if (!x) return 0;
@@ -483,7 +480,7 @@ function compareAnnouncementsDesc(a, b) {
     const ta = getTime(a);
     const tb = getTime(b);
     if (tb !== ta) return tb - ta;
-    // 最後 fallback：字串比較（避免不穩定排序）
+    // fallback: 字串比較
     if (a.notification_id && b.notification_id) return b.notification_id.localeCompare(a.notification_id);
     return 0;
 }
@@ -496,7 +493,7 @@ document.getElementById('login-user').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
 });
 
-// ========== 課程詳情功能 ==========
+// 課程詳情功能
 let currentCourseId = null;
 
 async function viewCourseDetail(courseId) {
@@ -684,7 +681,7 @@ function switchCourseTab(tabName, event) {
 }
 
 //通知按鈕狀態變化
-// ── 通知設定 ──
+// 通知設定
 const ALL_NOTIFICATION_TYPE = 'all';
 
 function getNotificationToggles() {

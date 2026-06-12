@@ -1,10 +1,10 @@
-// ========== 初始化 ==========
+// 初始化
 function initializeApp() {
     if (isLoggedIn) {
         document.getElementById('login-page').style.display = 'none';
         document.getElementById('app-page').style.display = 'block';
 
-        goPage('courses'); // ⭐⭐⭐ 加這行
+        goPage('courses');
 
         setTimeout(() => {
             const activePage = document.querySelector('.page.active');
@@ -22,7 +22,7 @@ function initializeApp() {
 }
 
 
-// ========== 登入 ==========
+// 登入
 function doLogin() {
     const role = document.getElementById('login-role').value;
     const user_id = document.getElementById('login-user').value.trim();
@@ -56,7 +56,7 @@ function doLogin() {
     });
 }
 
-// ========== 載入課程 ==========
+// 載入課程
 async function loadCourses() {
     const container = document.getElementById('courses-container');
     const countElem = document.getElementById('course-count');
@@ -98,7 +98,7 @@ async function loadCourses() {
     }
 }
 
-// ========== 顯示課程卡片 ==========
+// 顯示課程卡片
 function displayCourses(courses) {
     const container = document.getElementById('courses-container');
     
@@ -126,7 +126,7 @@ function displayCourses(courses) {
     });
 }
 
-// ========== 頁面切換 ==========
+// 頁面切換
 const pages = ['courses', 'announcements', 'grade-management', 'homework-management', 'students', 'settings', 'course-detail'];
 
 function goPage(name) {
@@ -211,7 +211,7 @@ function renderTeacherAnnouncementList(list, summary, announcements, type, title
     }).join('');
 }
 
-// ========== 課程詳情功能 ==========
+// 課程詳情功能
 
 let currentCourseId = null;
 let currentCourseData = null;
@@ -268,7 +268,7 @@ function displayCourseDetail(data) {
     document.getElementById('course-semester').textContent = course.semester || '114_2';
     document.getElementById('course-mode').textContent = course.is_online ? 'Online' : 'In-person';
 
-    // 根據資料庫的 is_online 欄位判斷是否可直播（主要判斷方式）
+    // 根據資料庫的 is_online 欄位判斷是否可直播(主要判斷方式)
     // 如果 is_online 為 null/undefined，則回退到課程名稱檢查
     let canLive = false;
     
@@ -276,7 +276,7 @@ function displayCourseDetail(data) {
         // 如果 is_online 有值，則直接使用
         canLive = !!course.is_online;
     } else {
-        // 備用方案：檢查課程名稱（以防 is_online 未被正確傳送）
+        // 備用方案：檢查課程名稱(以防 is_online 未被正確傳送)
         const onlineCourseNames = ['資料庫管理', '管理資訊系統', '資料視覺化'];
         canLive = onlineCourseNames.some(name => course.course_name.includes(name));
     }
@@ -462,7 +462,7 @@ function cancelMaterialModule(btn, oldTitle, oldDesc) {
     `;
 }
 
-// 載入分類公告（教師端）
+// 載入分類公告(教師端)
 async function loadCategorizedAnnouncements(courseId) {
     try {
         const response = await fetch(`/api/course/${courseId}`);
@@ -681,7 +681,7 @@ function switchCourseTab(tabName, event) {
             document.getElementById('course-overview').style.display = 'block';
     }
 }
-// 載入學生列表（原有功能）
+// 載入學生列表(原有功能)
 function loadStudents() {
     const course_id = document.getElementById('student_course').value;
     if (!course_id) return;
@@ -704,7 +704,7 @@ function loadStudents() {
         });
 }
 
-// 原有發布公告功能（保留）
+// 原有發布公告功能(保留)
 function publishAnnouncement() {
     const course_id = document.getElementById('announce_course').value;
     const title = document.getElementById('announce_title').value;
@@ -749,9 +749,9 @@ function publishAnnouncement() {
     });
 }
 
-// ========== 通用功能 ==========
+// 通用功能
 
-// ========== 更新個人資料 ==========
+// 更新個人資料
 async function updateProfile() {
     const nameInput = document.getElementById('profile-name');
     const emailInput = document.getElementById('profile-email');
@@ -986,7 +986,7 @@ async function deleteAnnouncement(item) {
 
 }
 
-// 儲存老師的課程列表（用於選擇課程）
+// 儲存老師的課程列表(用於選擇課程)
 let teacherCourses = [];
 
 // 發起線上課程
@@ -1084,7 +1084,7 @@ function confirmCreateRoom() {
 
 
 
-// 從課程詳情頁發起線上課程（不需要選擇課程，直接用 currentCourseId）
+// 從課程詳情頁發起線上課程(不需要選擇課程，直接用 currentCourseId)
 function createLiveRoomFromCourse() {
     if (!currentCourseId) {
         showToast('無法取得課程資訊');
